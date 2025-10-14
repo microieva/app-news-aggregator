@@ -59,6 +59,10 @@ class Settings(BaseSettings):
     }
     
     RSS_ARTICLE_LIMIT: int = 10
+
+    GNEWS_API_KEY: str = ""
+    GNEWS_API_URL: str = "https://gnews.io/api/v4"
+    GNEWS_ARTICLE_LIMIT: int = 10
     
     class Config:
         env_file = ".env"
