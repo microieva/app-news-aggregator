@@ -44,3 +44,5 @@ black==23.11.0
 
 asyncpraw==7.7.0
 asyncprawcore==2.3.0
+feedparser==6.0.10
+aiohttp==3.9.1
