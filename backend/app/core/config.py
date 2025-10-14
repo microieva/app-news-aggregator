@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     
     REDDIT_POST_LIMIT: int = 15
     REDDIT_SUBREDDITS: list = ["all", "programming", "technology", "news"]
+    NEWSAPI_ARTICLE_LIMIT: int = 10
     
     class Config:
         env_file = ".env"

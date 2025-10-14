@@ -22,7 +22,6 @@ class RedditAggregator(BaseAggregator):
         try:
             posts = await reddit_service.fetch_posts(topic, limit)
             
-            # Transform Reddit posts to article format
             articles = []
             for post in posts:
                 article = {
@@ -33,7 +32,7 @@ class RedditAggregator(BaseAggregator):
                     "source": self.get_source_name(),
                     "author": post["author"],
                     "published_at": post["published_at"],
-                    "image_url": None,  # Reddit doesn't provide article images easily
+                    "image_url": None,  
                     "source_metadata": {
                         "subreddit": post["subreddit"],
                         "score": post["score"],
@@ -51,3 +50,6 @@ class RedditAggregator(BaseAggregator):
     
     def get_source_name(self) -> str:
         return "reddit"
+    
+
+reddit_aggregator = RedditAggregator()
