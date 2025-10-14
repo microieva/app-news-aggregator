@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     REDDIT_CLIENT_SECRET: str = ""
     NEWSAPI_KEY: str = ""
     
+    REDDIT_POST_LIMIT: int = 15
+    REDDIT_SUBREDDITS: list = ["all", "programming", "technology", "news"]
+    
     class Config:
         env_file = ".env"
         case_sensitive = True
