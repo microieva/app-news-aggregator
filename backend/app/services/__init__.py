@@ -7,6 +7,13 @@ from .rss_service import rss_service
 from .rss_aggregator import rss_aggregator
 from .gnews_service import gnews_service
 from .gnews_aggregator import gnews_aggregator
+from .llm import ( 
+    LLMProvider, 
+    SummaryQuality, 
+    LLMProviderManager, 
+    provider_manager,
+    llm_retry
+)
 
 __all__ = [
   "BaseAggregator", 
@@ -17,5 +24,10 @@ __all__ = [
   "rss_service", 
   "rss_aggregator", 
   "gnews_service",
-  "gnews_aggregator"
+  "gnews_aggregator",
+  "LLMProvider",
+  "SummaryQuality", 
+  "LLMProviderManager", 
+  "provider_manager",
+  "llm_retry"
 ]
