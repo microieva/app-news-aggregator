@@ -63,6 +63,14 @@ class Settings(BaseSettings):
     GNEWS_API_KEY: str = ""
     GNEWS_API_URL: str = "https://gnews.io/api/v4"
     GNEWS_ARTICLE_LIMIT: int = 10
+
+    HUGGINGFACE_BASE_URL: str = "https://api-inference.huggingface.co"
+    HUGGINGFACE_DEFAULT_MODEL: str = "facebook/bart-large-cnn"
+    HUGGINGFACE_FALLBACK_MODELS: list = [
+        "facebook/bart-large-cnn",
+        "google/pegasus-xsum",
+        "mrm8488/bert-small2bert-small-finetuned-cnn_daily_mail-summarization"
+    ]
     
     class Config:
         env_file = ".env"

@@ -7,6 +7,7 @@ from .base_provider import (
 )
 from .provider_manager import LLMProviderManager, provider_manager
 from .retry import llm_retry
+from .huggingface_provider import HuggingFaceProvider, create_huggingface_provider 
 
 __all__ = [
     "LLMProvider",
@@ -16,5 +17,7 @@ __all__ = [
     "LLMRateLimitError",
     "LLMProviderManager",
     "provider_manager",
-    "llm_retry"
+    "llm_retry",
+    "HuggingFaceProvider",       
+    "create_huggingface_provider"
 ]
