@@ -71,6 +71,15 @@ class Settings(BaseSettings):
         "google/pegasus-xsum",
         "mrm8488/bert-small2bert-small-finetuned-cnn_daily_mail-summarization"
     ]
+
+    GROQ_API_URL: str = "https://api.groq.com/openai/v1"
+    GROQ_MODELS: list = [
+            "llama-3.3-70b-versatile",   
+            "llama-3.1-8b-instant",        
+            "mixtral-8x7b-32768",          
+            "gemma2-9b-it"         
+        ]
+    GROQ_API_KEY: str = ""
     
     class Config:
         env_file = ".env"

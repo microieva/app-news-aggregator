@@ -2,8 +2,6 @@ from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
 
-from backend.app.models.article import Article
-
 class TopicBase(BaseModel):
     name: str
     description: Optional[str] = None
@@ -24,7 +22,7 @@ class Topic(TopicBase):
         from_attributes = True
 
 class TopicWithArticles(Topic):
-    articles: List[Article] = []
+    articles: List['Article'] = []
 
 class TopicList(BaseModel):
     topics: List[Topic]

@@ -8,6 +8,7 @@ from .base_provider import (
 from .provider_manager import LLMProviderManager, provider_manager
 from .retry import llm_retry
 from .huggingface_provider import HuggingFaceProvider, create_huggingface_provider 
+from .groq_provider import GroqProvider, create_groq_provider
 
 __all__ = [
     "LLMProvider",
@@ -19,5 +20,7 @@ __all__ = [
     "provider_manager",
     "llm_retry",
     "HuggingFaceProvider",       
-    "create_huggingface_provider"
+    "create_huggingface_provider",
+    "GroqProvider",        
+    "create_groq_provider" 
 ]
