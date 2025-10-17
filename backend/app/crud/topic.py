@@ -1,51 +1,69 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, func
 from typing import List, Optional
 from app.models.topic import Topic
 from app.schemas.topic import TopicCreate, TopicUpdate
 
-def get_topic(db: Session, topic_id: int) -> Optional[Topic]:
+async def get_topic(db: AsyncSession, topic_id: int) -> Optional[Topic]:
     """Get a topic by ID"""
-    return db.query(Topic).filter(Topic.id == topic_id).first()
+    result = await db.execute(
+        select(Topic).where(Topic.id == topic_id)
+    )
+    return result.scalar_one_or_none()
 
-def get_topic_by_name(db: Session, name: str) -> Optional[Topic]:
+async def get_topic_by_name(db: AsyncSession, name: str) -> Optional[Topic]:
     """Get a topic by name"""
-    return db.query(Topic).filter(Topic.name == name).first()
+    result = await db.execute(
+        select(Topic).where(Topic.name == name)
+    )
+    return result.scalar_one_or_none()
 
-def get_topics(db: Session, skip: int = 0, limit: int = 100) -> List[Topic]:
+async def get_topics(db: AsyncSession, skip: int = 0, limit: int = 100) -> List[Topic]:
     """Get all topics with pagination"""
-    return db.query(Topic).offset(skip).limit(limit).all()
+    query = select(Topic).offset(skip).limit(limit)
+    result = await db.execute(query)
+    return result.scalars().all()
 
-def create_topic(db: Session, topic: TopicCreate) -> Topic:
+async def create_topic(db: AsyncSession, topic: TopicCreate) -> Topic:
     """Create a new topic"""
     db_topic = Topic(
         name=topic.name,
         description=topic.description
     )
     db.add(db_topic)
-    db.commit()
-    db.refresh(db_topic)
+    await db.commit()
+    await db.refresh(db_topic)
     return db_topic
 
-def update_topic(db: Session, topic_id: int, topic_update: TopicUpdate) -> Optional[Topic]:
+async def update_topic(db: AsyncSession, topic_id: int, topic_update: TopicUpdate) -> Optional[Topic]:
     """Update a topic"""
-    db_topic = db.query(Topic).filter(Topic.id == topic_id).first()
+    result = await db.execute(
+        select(Topic).where(Topic.id == topic_id)
+    )
+    db_topic = result.scalar_one_or_none()
+    
     if db_topic:
         update_data = topic_update.model_dump(exclude_unset=True)
         for field, value in update_data.items():
             setattr(db_topic, field, value)
-        db.commit()
-        db.refresh(db_topic)
+        await db.commit()
+        await db.refresh(db_topic)
     return db_topic
 
-def delete_topic(db: Session, topic_id: int) -> bool:
+async def delete_topic(db: AsyncSession, topic_id: int) -> bool:
     """Delete a topic"""
-    db_topic = db.query(Topic).filter(Topic.id == topic_id).first()
+    result = await db.execute(
+        select(Topic).where(Topic.id == topic_id)
+    )
+    db_topic = result.scalar_one_or_none()
+    
     if db_topic:
-        db.delete(db_topic)
-        db.commit()
+        await db.delete(db_topic)
+        await db.commit()
         return True
     return False
 
-def get_topics_count(db: Session) -> int:
+async def get_topics_count(db: AsyncSession) -> int:
     """Get total number of topics"""
-    return db.query(Topic).count()
+    result = await db.execute(select(func.count(Topic.id)))
+    return result.scalar_one()

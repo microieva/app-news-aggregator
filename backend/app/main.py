@@ -4,6 +4,7 @@ from app.core.config import settings
 from app.core.middleware import setup_cors
 from app.api.routes import api_router
 from app.core.favicon import favicon_router
+from app.services.llm import register_providers
 
 def create_application() -> FastAPI:
     application = FastAPI(
@@ -21,6 +22,7 @@ def create_application() -> FastAPI:
     
     return application
 
+register_providers()
 app = create_application()
 
 if __name__ == "__main__":

@@ -9,8 +9,10 @@ from .provider_manager import LLMProviderManager, provider_manager
 from .retry import llm_retry
 from .huggingface_provider import HuggingFaceProvider, create_huggingface_provider 
 from .groq_provider import GroqProvider, create_groq_provider
+from .register_provider import register_providers
 
 __all__ = [
+    "register_providers",
     "LLMProvider",
     "SummaryQuality", 
     "LLMError",

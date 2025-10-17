@@ -1,4 +1,5 @@
-from app.models.topic import Topic
-from app.models.article import Article
+from .topic import Topic
+from .article import Article
+from .summary import Summary
 
-__all__ = ["Topic", "Article"]
+__all__ = ["Topic", "Article", "Summary"]

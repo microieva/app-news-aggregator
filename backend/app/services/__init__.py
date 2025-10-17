@@ -14,6 +14,7 @@ from .llm import (
     provider_manager,
     llm_retry
 )
+from .summary_pipeline import summary_pipeline
 
 __all__ = [
   "BaseAggregator", 
@@ -29,5 +30,6 @@ __all__ = [
   "SummaryQuality", 
   "LLMProviderManager", 
   "provider_manager",
-  "llm_retry"
+  "llm_retry",
+  "summary_pipeline"
 ]
