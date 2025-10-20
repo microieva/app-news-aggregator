@@ -87,3 +87,13 @@ class BatchSummarizeResponse(BaseModel):
     failed: int
     success_rate: float
     failed_article_ids: List[int]
+
+class BackgroundSummarizeResponse(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+    
+    success: bool
+    task_id: Optional[str] = None
+    article_id: int
+    status: str  # pending, processing, already_completed, etc.
+    message: str
+    summary_id: Optional[int] = None

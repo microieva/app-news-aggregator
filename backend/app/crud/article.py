@@ -28,11 +28,6 @@ async def create_article(db: AsyncSession, article: ArticleCreate) -> Article:
     await db.refresh(db_article)
     return db_article
 
-async def get_article_async(db: AsyncSession, article_id: int) -> Article:
-    """Get an article by ID - async version"""
-    result = await db.execute(select(Article).where(Article.id == article_id))
-    return result.scalar_one_or_none()
-
 async def get_article(db: AsyncSession, article_id: int, include_summary: bool = True) -> Optional[Article]:
     """Get an article by ID, optionally including its summary"""
     query = select(Article).where(Article.id == article_id)

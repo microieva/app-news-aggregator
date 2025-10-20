@@ -20,5 +20,10 @@ class Summary(Base):
     retry_count = Column(Integer, default=0)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    task_id = Column(String(36), nullable=True, index=True)  
+    status = Column(String(20), default='pending')  # pending, processing, completed, failed
+    started_at = Column(DateTime(timezone=True), nullable=True) 
+    completed_at = Column(DateTime(timezone=True), nullable=True)  
     
     article = relationship("Article", back_populates="summary")

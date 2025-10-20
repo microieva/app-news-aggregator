@@ -67,3 +67,13 @@ class BulkProcessingResult(BaseModel):
     failed_count: int
     success_rate: float
     failed_article_ids: List[int]
+
+class TaskStatusResponse(BaseModel):
+    task_id: str
+    article_id: int
+    status: str  # pending, processing, completed, failed, error, exists
+    message: str
+
+class ArticleWithSummaryStatus(Article):
+    summary_status: Optional[dict] = None
+    background_tasks: Optional[List[dict]] = None
