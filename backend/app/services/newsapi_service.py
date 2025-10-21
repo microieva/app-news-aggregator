@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 class NewsAPIService:
     def __init__(self):
         self.api_key = settings.NEWSAPI_KEY
-        self.base_url = "https://newsapi.org/v2"
+        self.base_url = settings.NEWSAPI_BASE_URL
         
     async def fetch_articles(self, topic: str, limit: int = 10) -> List[Dict]:
         """

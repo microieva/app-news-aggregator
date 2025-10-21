@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     REDDIT_CLIENT_ID: str = ""
     REDDIT_CLIENT_SECRET: str = ""
     NEWSAPI_KEY: str = ""
+    NEWSAPI_BASE_URL: str = "https://newsapi.org/v2"
     
     REDDIT_POST_LIMIT: int = 15
     REDDIT_SUBREDDITS: list = ["all", "programming", "technology", "news"]
