@@ -1,17 +1,18 @@
-from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional, Dict, Any
 from sqlalchemy import desc, func, or_
 from app.models.article import Article
 from app.models.summary import Summary
+from app.models.topic import Topic 
 from app.schemas.article import ArticleCreate, ArticleUpdate
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from sqlalchemy.orm import selectinload 
+from sqlalchemy.orm import selectinload
 
 
 async def create_article(db: AsyncSession, article: ArticleCreate) -> Article:
     """Create a new article - async version"""
+
     db_article = Article(
         title=article.title,
         url=article.url,
@@ -27,6 +28,13 @@ async def create_article(db: AsyncSession, article: ArticleCreate) -> Article:
     await db.commit()
     await db.refresh(db_article)
     return db_article
+
+async def get_by_url(db: AsyncSession, url: str) -> Optional[Article]:
+        """Get article by URL (for duplicate checking)"""
+        result = await db.execute(select(Article).where(Article.url == url))
+        return result.scalar_one_or_none()
+
+# ------- not confirmed if used anywhere -------
 
 async def get_article(db: AsyncSession, article_id: int, include_summary: bool = True) -> Optional[Article]:
     """Get an article by ID, optionally including its summary"""

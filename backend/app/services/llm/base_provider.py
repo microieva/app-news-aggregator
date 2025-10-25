@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import Dict, Any
 from enum import Enum
-import logging
+from app.core.config import setup_colored_logging
 
-logger = logging.getLogger(__name__)
+logger = setup_colored_logging()
 
 class SummaryQuality(Enum):
     """Quality levels for summary generation"""

@@ -1,9 +1,9 @@
 from typing import List, Dict
 from .base_aggregator import BaseAggregator
 from .gnews_service import gnews_service
-import logging
+from app.core.config import setup_colored_logging
 
-logger = logging.getLogger(__name__)
+logger = setup_colored_logging()
 
 class GNewsAggregator(BaseAggregator):
     """GNews-specific implementation of BaseAggregator"""

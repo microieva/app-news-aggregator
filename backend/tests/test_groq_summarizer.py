@@ -6,10 +6,10 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from app.services.llm.groq_provider import GroqProvider, create_groq_provider, SummaryQuality
 from app.services.llm import provider_manager
 from app.core.config import settings
-import logging
+from app.core.config import setup_colored_logging
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = setup_colored_logging()
 
 async def test_groq_availability():
     """Test if Groq provider is available"""

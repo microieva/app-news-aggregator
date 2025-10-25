@@ -1,12 +1,12 @@
 import httpx
-import logging
+from app.core.config import setup_colored_logging
 from typing import Dict, Any
 
 from .base_provider import LLMProvider, SummaryQuality, LLMError, LLMTimeoutError, LLMRateLimitError
 from .retry import llm_retry
 from app.core.config import settings
 
-logger = logging.getLogger(__name__)
+logger = setup_colored_logging()
 
 class HuggingFaceProvider(LLMProvider):
     """

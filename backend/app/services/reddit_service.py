@@ -1,9 +1,9 @@
 import asyncpraw
 from typing import List, Dict, Optional
 from app.core.config import settings
-import logging
+from app.core.config import setup_colored_logging
 
-logger = logging.getLogger(__name__)
+logger = setup_colored_logging()
 
 class RedditService:
     def __init__(self):

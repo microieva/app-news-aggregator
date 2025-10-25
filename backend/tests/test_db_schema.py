@@ -14,10 +14,10 @@ from app.models.topic import Topic
 from app.models.summary import Summary
 from sqlalchemy import select, text
 from sqlalchemy.orm import selectinload
-import logging
+from app.core.config import setup_colored_logging
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = setup_colored_logging()
 
 async def test_database_schema():
     """Test the complete database schema - FIXED ASYNC VERSION"""

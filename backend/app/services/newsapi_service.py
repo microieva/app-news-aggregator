@@ -1,10 +1,10 @@
 import httpx
 from typing import List, Dict, Optional
 from app.core.config import settings
-import logging
+from app.core.config import setup_colored_logging
 from datetime import datetime, timedelta
 
-logger = logging.getLogger(__name__)
+logger = setup_colored_logging()
 
 class NewsAPIService:
     def __init__(self):
