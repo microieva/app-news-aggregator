@@ -3,7 +3,9 @@ from asyncio import Queue
 from typing import Dict, Optional
 import uuid
 from datetime import datetime
-import logging
+from app.core.config import setup_colored_logging
+from sqlalchemy import select
+from app.core.database import AsyncSessionLocal
 
 from app.services.summary_pipeline import summary_pipeline
 from app.models.summary import Summary
@@ -11,7 +13,7 @@ from app.models.article import Article
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-logger = logging.getLogger(__name__)
+logger = setup_colored_logging()
 
 class BackgroundTaskManager:
     """
@@ -228,8 +230,6 @@ class BackgroundTaskManager:
     
     async def _get_task_status_from_db(self, task_id: str) -> Optional[dict]:
         """Get task status from database"""
-        from sqlalchemy import select
-        from app.core.database import AsyncSessionLocal
         
         async with AsyncSessionLocal() as db:
             try:
@@ -265,8 +265,6 @@ class BackgroundTaskManager:
 
     async def _get_article_title_from_db(self, db, article_id: int) -> str:
         """Get article title from database"""
-        from sqlalchemy import select
-        from app.models.article import Article
         
         try:
             result = await db.execute(
@@ -287,6 +285,59 @@ class BackgroundTaskManager:
     async def get_pending_tasks_count(self) -> int:
         """Get number of pending tasks in queue"""
         return self.task_queue.qsize()
+    
+    async def recover_pending_tasks(self, db) -> None:
+        """Recover pending tasks from database on startup"""
+        
+        #async with AsyncSessionLocal() as db:
+        try:
+            result = await db.execute(
+                select(Summary).where(Summary.status.in_(['pending', 'processing']))
+            )
+            pending_summaries = result.scalars().all()
+            
+            for summary in pending_summaries:
+                task_id = summary.task_id
+                article_id = summary.article_id
+                
+                article_result = await db.execute(
+                    select(Article).where(Article.id == article_id)
+                )
+                article = article_result.scalar_one_or_none()
+                
+                if not article:
+                    continue
+                
+                task_data = {
+                    'task_id': task_id,
+                    'db': db,
+                    'article_id': article_id,
+                    'article_content': article.content,
+                    'article_title': article.title,
+                    'preferred_provider': None,
+                    'quality_level': summary.quality_level
+                }
+                
+                await self.task_queue.put(task_data)
+                
+                self.task_status[task_id] = {
+                    'task_id': task_id,
+                    'article_id': article_id,
+                    'article_title': article.title,
+                    'status': summary.status,
+                    'submitted_at': summary.created_at,
+                    'started_at': summary.started_at,
+                    'completed_at': summary.completed_at,
+                    'preferred_provider': None,
+                    'quality_level': summary.quality_level,
+                    'error': summary.error_message,
+                    'summary_id': summary.id
+                }
+                
+            logger.info(f"♻️ Recovered {len(pending_summaries)} pending tasks from database")
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to recover pending tasks: {e}")    
     
     async def get_active_tasks_count(self) -> int:
         """Get number of actively processing tasks"""

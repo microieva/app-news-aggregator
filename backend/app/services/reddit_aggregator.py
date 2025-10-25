@@ -1,9 +1,9 @@
 from typing import List, Dict
 from .base_aggregator import BaseAggregator
 from .reddit_service import reddit_service
-import logging
+from app.core.config import setup_colored_logging
 
-logger = logging.getLogger(__name__)
+logger = setup_colored_logging()
 
 class RedditAggregator(BaseAggregator):
     """Reddit-specific implementation of BaseAggregator"""

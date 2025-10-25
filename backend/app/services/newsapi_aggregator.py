@@ -1,9 +1,9 @@
 from typing import List, Dict
 from .base_aggregator import BaseAggregator
 from .newsapi_service import newsapi_service
-import logging
+from app.core.config import setup_colored_logging
 
-logger = logging.getLogger(__name__)
+logger = setup_colored_logging()
 
 class NewsAPIAggregator(BaseAggregator):
     """NewsAPI-specific implementation of BaseAggregator"""

@@ -1,5 +1,5 @@
 from .topic import (
-    get_topic, get_topic_by_name, get_topics, create_topic, 
+    get_topic, get_topic_by_name, get_all, create_topic, 
     update_topic, delete_topic, get_topics_count
 )
 from .article import (

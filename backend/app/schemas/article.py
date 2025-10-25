@@ -16,6 +16,9 @@ class ArticleBase(BaseModel):
 
 class ArticleCreate(ArticleBase):
     source_metadata: Optional[Dict[str, Any]] = None
+    primary_topic: Optional[str] = None
+    secondary_topics: Optional[List[str]] = None
+    original_search_topic: Optional[str] = None
 
 class ArticleUpdate(BaseModel):
     model_config = ConfigDict(protected_namespaces=())

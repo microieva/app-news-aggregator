@@ -5,6 +5,8 @@ from app.core.middleware import setup_cors
 from app.api.routes import api_router
 from app.core.favicon import favicon_router
 from app.services.llm import register_providers
+from app.core.lifespan import app_lifespan
+
 
 def create_application() -> FastAPI:
     application = FastAPI(
@@ -13,6 +15,7 @@ def create_application() -> FastAPI:
         version=settings.PROJECT_VERSION,
         docs_url=settings.DOCS_URL,
         redoc_url=settings.REDOC_URL,
+        lifespan=app_lifespan
     )
     
     setup_cors(application)
@@ -24,6 +27,7 @@ def create_application() -> FastAPI:
 
 register_providers()
 app = create_application()
+
 
 if __name__ == "__main__":
     uvicorn.run(

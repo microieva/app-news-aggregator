@@ -1,9 +1,9 @@
 import httpx
 from typing import List, Dict
 from app.core.config import settings
-import logging
+from app.core.config import setup_colored_logging
 
-logger = logging.getLogger(__name__)
+logger = setup_colored_logging()
 
 class GNewsService:
     def __init__(self):

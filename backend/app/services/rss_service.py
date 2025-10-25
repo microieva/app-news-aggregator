@@ -1,12 +1,12 @@
 import feedparser
 import asyncio
 from typing import List, Dict
-import logging
+from app.core.config import setup_colored_logging
 from datetime import datetime
 import aiohttp
 from app.core.config import settings
 
-logger = logging.getLogger(__name__)
+logger = setup_colored_logging()
 
 class RSSService:
     def __init__(self):

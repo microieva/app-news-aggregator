@@ -1,4 +1,4 @@
-import logging
+from app.core.config import setup_colored_logging
 from typing import Optional
 import time
 
@@ -9,7 +9,7 @@ from app.services.llm.provider_manager import provider_manager
 from app.models.article import Article
 from app.models.summary import Summary
 
-logger = logging.getLogger(__name__)
+logger = setup_colored_logging()
 
 class SummaryPipeline:
     """

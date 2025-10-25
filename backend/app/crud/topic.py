@@ -4,12 +4,12 @@ from typing import List, Optional
 from app.models.topic import Topic
 from app.schemas.topic import TopicCreate, TopicUpdate
 
-async def get_topic(db: AsyncSession, topic_id: int) -> Optional[Topic]:
-    """Get a topic by ID"""
-    result = await db.execute(
-        select(Topic).where(Topic.id == topic_id)
-    )
-    return result.scalar_one_or_none()
+async def create_topic(db: AsyncSession, *, obj_in: TopicCreate) -> Topic:
+    db_obj = Topic(**obj_in.model_dump())
+    db.add(db_obj)
+    await db.commit()
+    await db.refresh(db_obj)
+    return db_obj
 
 async def get_topic_by_name(db: AsyncSession, name: str) -> Optional[Topic]:
     """Get a topic by name"""
@@ -18,22 +18,28 @@ async def get_topic_by_name(db: AsyncSession, name: str) -> Optional[Topic]:
     )
     return result.scalar_one_or_none()
 
-async def get_topics(db: AsyncSession, skip: int = 0, limit: int = 100) -> List[Topic]:
+async def get_all(db: AsyncSession, skip: int = 0, limit: int = 100) -> List[Topic]:
     """Get all topics with pagination"""
     query = select(Topic).offset(skip).limit(limit)
     result = await db.execute(query)
     return result.scalars().all()
 
-async def create_topic(db: AsyncSession, topic: TopicCreate) -> Topic:
-    """Create a new topic"""
-    db_topic = Topic(
-        name=topic.name,
-        description=topic.description
+async def get_topic_id_by_name(name: str, db: AsyncSession) -> Optional[int]:
+    """Get topic ID by name"""
+    result = await db.execute(
+        select(Topic.id).where(Topic.name == name)
     )
-    db.add(db_topic)
-    await db.commit()
-    await db.refresh(db_topic)
-    return db_topic
+    topic_id = result.scalar_one_or_none()
+    return topic_id
+
+# ------- not confirmed if used anywhere -------
+
+async def get_topic(db: AsyncSession, topic_id: int) -> Optional[Topic]:
+    """Get a topic by ID"""
+    result = await db.execute(
+        select(Topic).where(Topic.id == topic_id)
+    )
+    return result.scalar_one_or_none()
 
 async def update_topic(db: AsyncSession, topic_id: int, topic_update: TopicUpdate) -> Optional[Topic]:
     """Update a topic"""

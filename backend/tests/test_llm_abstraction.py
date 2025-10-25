@@ -4,10 +4,10 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from app.services.llm import LLMProvider, SummaryQuality, LLMError, provider_manager
-import logging
+from app.core.config import setup_colored_logging
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = setup_colored_logging()
 
 class MockLLMProvider(LLMProvider):
     """Mock provider for testing the abstraction layer"""

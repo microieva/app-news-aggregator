@@ -1,9 +1,9 @@
 from .provider_manager import provider_manager
 from .huggingface_provider import HuggingFaceProvider
 from .groq_provider import GroqProvider
-import logging
+from app.core.config import setup_colored_logging
 
-logger = logging.getLogger(__name__)
+logger = setup_colored_logging()
 
 def register_providers():
     """Register all LLM providers with the manager"""

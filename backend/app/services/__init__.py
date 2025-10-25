@@ -15,6 +15,10 @@ from .llm import (
     llm_retry
 )
 from .summary_pipeline import summary_pipeline
+from .topic_matcher import topic_matcher
+from .topic_initializer import topic_initializer
+from .aggregation_orchestrator import aggregation_orchestrator
+from .aggregation_service import aggregation_service
 
 __all__ = [
   "BaseAggregator", 
@@ -31,5 +35,9 @@ __all__ = [
   "LLMProviderManager", 
   "provider_manager",
   "llm_retry",
-  "summary_pipeline"
+  "summary_pipeline",
+  "aggregation_orchestrator",
+  "aggregation_service",
+  "topic_initializer",
+  "topic_matcher"
 ]

@@ -5,10 +5,10 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from app.services.llm import HuggingFaceProvider, SummaryQuality, provider_manager
 from app.core.config import settings
-import logging
+from app.core.config import setup_colored_logging
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = setup_colored_logging()
 
 async def test_huggingface_availability():
     """Test if Hugging Face provider is available"""
