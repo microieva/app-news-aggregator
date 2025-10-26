@@ -13,7 +13,7 @@ class CronManager:
         self.jobs: Dict[str, dict] = {}
         self._task_processor = None
     
-    def add_interval_job(self, func, interval_minutes: int = 5, name: str = "Unnamed Job"):
+    def add_aggregation_job(self, func, interval_minutes: int = 5, name: str = "Unnamed Job"):
         """Add a job that runs at fixed intervals"""
         job_id = f"{name}_{interval_minutes}min"
         

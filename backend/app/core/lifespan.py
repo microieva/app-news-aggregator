@@ -1,14 +1,10 @@
 from contextlib import asynccontextmanager
-import asyncio
 from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import sessionmaker
 
 from app.core.database import engine, Base
-from sqlalchemy.orm import sessionmaker
-from app.core.background_tasks import task_manager
-from app.core.cron_manager import cron_manager
-from app.services.aggregation_service import aggregation_service
-from app.core.config import setup_colored_logging
+from app.core import task_manager, cron_manager, setup_colored_logging
 from app.services import topic_initializer
 
 logger = setup_colored_logging()
@@ -21,8 +17,7 @@ async def app_lifespan(app:FastAPI):
 
 async def startup():
     logger.info("\n\n\n\n\n 🚀 Starting News Aggregator Application...\n\n\n\n\n")
-    
-    
+
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
@@ -33,24 +28,27 @@ async def startup():
     async with async_session_factory() as db_session:
         await topic_initializer.initialize_default_topics(db_session)
     
-    asyncio.create_task(task_manager.process_tasks())
-    logger.info("\n\n\n✅ Background task processor started\n\n\n")
+    await task_manager.start_processing()
+    logger.info("✅ Background task processor started")
+
+    await task_manager.recover_pending_tasks(db_session)
+    logger.info("✅ Pending tasks recovered")
     # FOR PRODUCTION:
-    
-    # cron_manager.add_interval_job(
+
+    # cron_manager.add_aggregation_job(
     #     func=aggregation_service.run_aggregation,
     #     interval_minutes=30,
-    #     name="News Aggregation"
+    #     name="Aggregation"
     # )
-    cron_manager.add_one_time_job(
-        func=aggregation_service.run_aggregation,
-        name="News Aggregation Startup"
-    )
-    cron_manager.start()
+    # for dev - not needed because it runs from task_manager calls above
+    # cron_manager.add_one_time_job(
+    #     func=aggregation_service.run_aggregation,
+    #     name="Aggregation"
+    # )
+
+    # # Will be needed for production where we will have the cron job: 
+    # cron_manager.start()
     logger.info("✅ Cron manager started")
-    
-    await task_manager.recover_pending_tasks(db_session)
-    logger.info("✅ Pending tasks recovered\n\n\n\n\n")
 
 async def shutdown():
     logger.info("🛑 Shutting down News Aggregator Application...")
@@ -58,5 +56,5 @@ async def shutdown():
     cron_manager.stop()
     logger.info("✅ Cron manager stopped")
     
-    await task_manager.shutdown()
+    await task_manager.stop_processing()
     logger.info("✅ Background task manager stopped")
