@@ -54,7 +54,11 @@ class TopicMatcher:
     async def get_primary_topic(self, title: str, content: str, min_confidence: float = 0.3) -> Optional[str]:
         """Get the most relevant topic for the content"""
         topics = await self.analyze_content_for_topics(title, content, min_confidence)
-        return topics[0]["topic"] if topics else "other"
+
+        if not topics:
+            return "other"
+        else:
+            return topics[0]["topic"]
     
 
     async def expand_search_queries(self, base_topic: str) -> List[str]:

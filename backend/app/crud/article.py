@@ -34,9 +34,7 @@ async def get_by_url(db: AsyncSession, url: str) -> Optional[Article]:
         result = await db.execute(select(Article).where(Article.url == url))
         return result.scalar_one_or_none()
 
-# ------- not confirmed if used anywhere -------
-
-async def get_article(db: AsyncSession, article_id: int, include_summary: bool = True) -> Optional[Article]:
+async def get_article_by_id(db: AsyncSession, article_id: int, include_summary: bool = True) -> Optional[Article]:
     """Get an article by ID, optionally including its summary"""
     query = select(Article).where(Article.id == article_id)
     
@@ -45,6 +43,9 @@ async def get_article(db: AsyncSession, article_id: int, include_summary: bool =
     
     result = await db.execute(query)    
     return result.scalar_one_or_none()
+
+# ------- not confirmed if used anywhere -------
+
 
 async def get_articles_by_topic(
     db: AsyncSession, 

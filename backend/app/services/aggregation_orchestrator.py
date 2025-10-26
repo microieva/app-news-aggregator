@@ -30,15 +30,14 @@ class AggregationOrchestrator:
         Returns:
             Combined list of articles from all sources
         """
-        logger.info(f"\n\n🔄 Starting aggregation for topic: {topic}")
         
-        # Run all aggregators concurrently
+        logger.info(f"\n\n🔄 Starting aggregation for topic: {topic}")
+
         tasks = []
         for source_name, aggregator in self.aggregators.items():
             task = self._fetch_from_aggregator(aggregator, topic, limit_per_source, source_name)
             tasks.append(task)
         
-        # Wait for all aggregators to complete
         results = await asyncio.gather(*tasks, return_exceptions=True)
         
         all_articles = []
@@ -48,7 +47,7 @@ class AggregationOrchestrator:
             elif result:
                 all_articles.extend(result)
         
-        logger.info(f"\n\n\n📊 Aggregation complete: {len(all_articles)} total articles from {len(self.aggregators)} sources\n\n\n")
+        logger.info(f"📊 Aggregation complete: {len(all_articles)} total articles from {len(self.aggregators)} sources")
         return all_articles
     
     async def _fetch_from_aggregator(self, aggregator, topic: str, limit: int, source_name: str):

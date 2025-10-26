@@ -9,16 +9,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 async def create_summary(db: AsyncSession, summary: SummaryCreate) -> Summary:
-    """
-    Create a new summary for an article.
-    
-    Args:
-        db: Database session
-        summary: Summary data to create
-        
-    Returns:
-        Created Summary object
-    """
     db_summary = Summary(
         article_id=summary.article_id,
         content=summary.content,
@@ -37,40 +27,53 @@ async def create_summary(db: AsyncSession, summary: SummaryCreate) -> Summary:
     await db.refresh(db_summary)
     return db_summary
 
-
-async def get_summary(db: AsyncSession, summary_id: int) -> Optional[Summary]:
-    """
-    Get a summary by ID.
-    
-    Args:
-        db: Database session
-        summary_id: Summary ID
-        
-    Returns:
-        Summary object or None if not found
-    """
-    result = await db.execute(
-        select(Summary).where(Summary.id == summary_id)
-    )
-    return result.scalar_one_or_none()
-
-
 async def get_summary_by_article_id(db: AsyncSession, article_id: int) -> Optional[Summary]:
-    """
-    Get summary for a specific article.
-    
-    Args:
-        db: Database session
-        article_id: Article ID
-        
-    Returns:
-        Summary object or None if not found
-    """
     result = await db.execute(
         select(Summary).where(Summary.article_id == article_id)
     )
     return result.scalar_one_or_none()
 
+async def get_pending_summaries(
+    db: AsyncSession,
+    skip: int = 0,
+    limit: int = 50
+) -> List[Summary]:
+    """
+    Get summaries that are pending (not successful).
+    
+    Args:
+        db: Database session
+        skip: Number of records to skip
+        limit: Maximum number of records to return
+        
+    Returns:
+        List of pending Summary objects
+    """
+    query = (
+        select(Summary)
+        .where(Summary.is_successful == False)
+        .order_by(desc(Summary.id))
+        .offset(skip)
+        .limit(limit)
+    )
+    result = await db.execute(query)
+    return result.scalars().all()
+
+async def get_summary(db: AsyncSession, summary_id: int) -> Optional[Summary]:
+    result = await db.execute(
+        select(Summary).where(Summary.id == summary_id)
+    )
+    return result.scalar_one_or_none()
+
+async def mark_summary_failed(db: AsyncSession, summary_id, str):
+    failed_summary = get_summary(db, summary_id)
+    if failed_summary:
+        failed_summary['is_successful'] = False
+        failed_summary['status'] = "failed"
+        failed_summary['error_message'] = str
+        summary_update = SummaryUpdate(**failed_summary)
+
+        await update_summary(db, summary_id, summary_update)
 
 async def get_summaries_by_provider(
     db: AsyncSession, 
