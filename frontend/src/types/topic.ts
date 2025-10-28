@@ -1,10 +1,12 @@
+import { TopicsData } from "./api";
+
 export interface Topic {
   id: string;
   name: string;
   description?: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface CreateTopicRequest {
@@ -17,3 +19,4 @@ export interface UpdateTopicRequest {
   description?: string;
   isActive?: boolean;
 }
+

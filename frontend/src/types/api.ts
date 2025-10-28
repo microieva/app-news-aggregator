@@ -1,3 +1,6 @@
+import { Article } from "./article";
+import { Topic } from "./topic";
+
 export interface ApiResponse<T> {
   data: T
   message?: string
@@ -20,7 +23,12 @@ export interface PaginatedResponse<T> {
 }
 
 export interface ArticlesData {
-  articles: any;
+  articles: Article[]
   total: number;
   topic_name?: string;
+}
+
+export interface TopicsData {
+  topics: Topic[];
+  total: number;
 }

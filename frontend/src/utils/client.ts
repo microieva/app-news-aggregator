@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { ApiError } from '@/types/api';
 
-class ApiClient {
+export class ApiClient {
   private client: AxiosInstance;
 
   constructor(baseURL: string = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001/api') {
@@ -75,4 +75,4 @@ class ApiClient {
   // }
 }
 
-export const apiClient = new ApiClient();
+//export const apiClient = new ApiClient();
