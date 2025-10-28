@@ -4,24 +4,41 @@ from pydantic import BaseModel, ConfigDict
 
 
 class SummaryBase(BaseModel):
-    model_config = ConfigDict(protected_namespaces=())
-    
+    id: Optional[int] = None 
+    article_id: int
     content: str
     provider: str
-    model_name: str  # Consistent naming
+    model_name: str 
     quality_level: str = "standard"
     word_count: int
     char_count: int
     processing_time_ms: int
+    is_successful: bool
+    status: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
 
 
-class SummaryCreate(SummaryBase):
+class SummaryCreate(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+
     article_id: int
+    task_id: str
+    status: str = 'pending'
+    content: str = ''  
+    provider: str
+    model_name: str
+    quality_level: str
+    word_count: int = 0
+    char_count: int = 0
+    processing_time_ms: int = 0
+    is_successful: bool = False
 
 
 class SummaryUpdate(BaseModel):
-    model_config = ConfigDict(protected_namespaces=())
-    
+    status: Optional[str] = None
     content: Optional[str] = None
     provider: Optional[str] = None
     model_name: Optional[str] = None
@@ -44,23 +61,19 @@ class Summary(SummaryBase):
     updated_at: Optional[datetime]
 
 
-class SummaryWithArticle(Summary):
+class SummaryWithArticle(SummaryBase):
     article_title: str
     article_url: str
     topic_name: str
 
 
-class SummarizeRequest(BaseModel):
-    model_config = ConfigDict(protected_namespaces=())
-    
+class SummarizeRequest(BaseModel):    
     article_id: int
     preferred_provider: Optional[str] = None
     quality_level: str = "standard"
 
 
 class SummarizeResponse(BaseModel):
-    model_config = ConfigDict(protected_namespaces=())
-    
     success: bool
     summary_id: Optional[int] = None
     summary_content: Optional[str] = None
@@ -71,8 +84,6 @@ class SummarizeResponse(BaseModel):
 
 
 class BatchSummarizeRequest(BaseModel):
-    model_config = ConfigDict(protected_namespaces=())
-    
     topic_id: Optional[int] = None
     preferred_provider: Optional[str] = None
     quality_level: str = "standard"
@@ -80,8 +91,6 @@ class BatchSummarizeRequest(BaseModel):
 
 
 class BatchSummarizeResponse(BaseModel):
-    model_config = ConfigDict(protected_namespaces=())
-    
     total_articles: int
     successful: int
     failed: int
@@ -89,8 +98,6 @@ class BatchSummarizeResponse(BaseModel):
     failed_article_ids: List[int]
 
 class BackgroundSummarizeResponse(BaseModel):
-    model_config = ConfigDict(protected_namespaces=())
-    
     success: bool
     task_id: Optional[str] = None
     article_id: int

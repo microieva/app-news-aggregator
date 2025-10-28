@@ -1,18 +1,17 @@
 import { useState, useCallback } from 'react';
 import { articlesService } from '@/api/articles/service';
-//import { Article, CreateArticleRequest, UpdateArticleRequest } from '@/types/article';
-import { ApiError } from '@/types/api';
+import { ApiError, ArticlesData } from '@/types/api';
+
 
 export const useArticles = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<ApiError | null>(null);
 
-  const getArticles = useCallback(async (): Promise<any[]> => {
+  const getArticles = useCallback(async (): Promise<ArticlesData> => {
     setLoading(true);
     setError(null);
     try {
-      const response = await articlesService.getArticles();
-      return response.data;
+      return await articlesService.getArticles();
     } catch (err) {
       const apiError = err as ApiError;
       setError(apiError);

@@ -1,3 +1,5 @@
+import { Articles } from "@/components/ui/Articles";
+
 export default function Home() {
   return (
     <main className="flex-1 container mx-auto px-4 py-8">
@@ -25,6 +27,11 @@ export default function Home() {
           <p className="text-card-foreground">
             Frontend setup completed successfully! Ready for topic management implementation.
           </p>
+        </div>
+        <div className="p-6 bg-card rounded-lg border shadow-sm mt-4">
+          <div className="flex items-center justify-center my-4 text-card-foreground">
+            <Articles />
+          </div>
         </div>
       </div>
     </main>

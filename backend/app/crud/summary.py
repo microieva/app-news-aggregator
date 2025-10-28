@@ -51,8 +51,8 @@ async def get_pending_summaries(
     """
     query = (
         select(Summary)
-        .where(Summary.is_successful == False)
-        .order_by(desc(Summary.id))
+        .where(Summary.status == "pending")
+        .order_by(desc(Summary.created_at))
         .offset(skip)
         .limit(limit)
     )
@@ -65,15 +65,27 @@ async def get_summary(db: AsyncSession, summary_id: int) -> Optional[Summary]:
     )
     return result.scalar_one_or_none()
 
-async def mark_summary_failed(db: AsyncSession, summary_id, str):
-    failed_summary = get_summary(db, summary_id)
-    if failed_summary:
-        failed_summary['is_successful'] = False
-        failed_summary['status'] = "failed"
-        failed_summary['error_message'] = str
-        summary_update = SummaryUpdate(**failed_summary)
+async def get_summary_by_task_id(db: AsyncSession, task_id: str) -> Optional[Summary]:
+    result = await db.execute(
+        select(Summary).where(Summary.task_id == task_id)
+    )
+    return result.scalar_one_or_none()
 
-        await update_summary(db, summary_id, summary_update)
+async def mark_summary_failed(db: AsyncSession, summary_id: int, str: str):
+    db_summary =  await db.execute(select(Summary).where(Summary.id == summary_id))
+                                   
+    if db_summary:
+        db_summary['is_successful'] = False
+        db_summary['status'] = "failed"
+        db_summary['error_message'] = str
+        update_data = SummaryUpdate(**db_summary)
+
+        for field, value in update_data.items():
+            setattr(db_summary, field, value)
+        await db.commit()
+        await db.refresh(db_summary)
+        
+    return db_summary
 
 async def get_summaries_by_provider(
     db: AsyncSession, 
@@ -183,6 +195,7 @@ async def delete_summary(db: AsyncSession, summary_id: int) -> bool:
         await db.delete(db_summary)
         await db.commit()
         return True
+    
     return False
 
 

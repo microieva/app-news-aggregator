@@ -30,8 +30,6 @@ class AggregationOrchestrator:
         Returns:
             Combined list of articles from all sources
         """
-        
-        logger.info(f"\n\n🔄 Starting aggregation for topic: {topic}")
 
         tasks = []
         for source_name, aggregator in self.aggregators.items():
@@ -46,8 +44,7 @@ class AggregationOrchestrator:
                 logger.error(f"Aggregator error: {result}")
             elif result:
                 all_articles.extend(result)
-        
-        logger.info(f"📊 Aggregation complete: {len(all_articles)} total articles from {len(self.aggregators)} sources")
+
         return all_articles
     
     async def _fetch_from_aggregator(self, aggregator, topic: str, limit: int, source_name: str):

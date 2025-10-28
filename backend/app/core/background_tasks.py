@@ -1,15 +1,17 @@
 import asyncio
 from enum import Enum
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 import uuid
+import traceback
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import sessionmaker
 
-from app.core import get_db, setup_colored_logging
+from app.core import setup_colored_logging, engine
 from app.services import summary_pipeline, aggregation_service
-from app.models import Summary
 from app.crud import article as article_crud
 from app.crud import summary as summary_crud
+from app.schemas import SummaryCreate
 
 logger = setup_colored_logging()
 
@@ -32,27 +34,9 @@ class BackgroundTaskManager:
         self.max_concurrent_aggregations = 1  
         self.max_concurrent_summarizations = 3 
 
-
-    # async def process_tasks(self):
-    #     """
-    #     Background worker that processes summarization tasks
-    #     """
-    #     logger.info("🔄 Background task processor started")
-        
-    #     while self.is_running:
-    #         try:
-    #             try:
-    #                 task_data = await asyncio.wait_for(self.task_queue.get(), timeout=1.0)
-    #             except asyncio.TimeoutError:
-    #                 continue
-                
-    #             task = asyncio.create_task(self._process_single_task(task_data))
-    #             self.active_tasks[task_data['task_id']] = task
-                
-    #             await self._cleanup_completed_tasks()
-                
-    #         except Exception as e:
-    #             logger.error(f"❌ Error in background task processor: {e}")
+        self.async_session_factory = sessionmaker(
+            engine, class_=AsyncSession, expire_on_commit=False
+        )
   
     async def start_processing(self):
         """Start processing both aggregation and summarization tasks"""
@@ -62,12 +46,9 @@ class BackgroundTaskManager:
             
         self.is_running = True
         logger.info("🔄 Starting background task processors...")
-        
-        # Start aggregation processor
         asyncio.create_task(self._process_aggregation_tasks())
         logger.info("✅ Aggregation task processor started")
         
-        # Start multiple summarization workers (for parallel processing)
         for i in range(self.max_concurrent_summarizations):
             asyncio.create_task(self._process_summarization_tasks(i))
             logger.info(f"✅ Summarization worker {i+1} started")
@@ -97,7 +78,12 @@ class BackgroundTaskManager:
         
         while self.is_running:
             try:
-                if len([t for t in self.active_tasks.values() if t.get('type') == TaskType.AGGREGATION]) >= self.max_concurrent_aggregations:
+                active_aggregation_count = len([
+                    task_id for task_id, status in self.task_status.items()
+                    if status.get('type') == TaskType.AGGREGATION and status.get('status') == 'processing'
+                ])
+                
+                if active_aggregation_count >= self.max_concurrent_aggregations:
                     await asyncio.sleep(1)
                     continue
                 
@@ -116,6 +102,7 @@ class BackgroundTaskManager:
                 continue
             except Exception as e:
                 logger.error(f"❌ Error in aggregation task processor: {e}")
+                logger.error(f"🔍 Stack trace: {traceback.format_exc()}")
 
     async def _execute_aggregation_task(self, task_data: Dict) -> Dict:
         """Execute an aggregation task"""
@@ -154,20 +141,19 @@ class BackgroundTaskManager:
         while self.is_running:
             try:
                 task_data = await asyncio.wait_for(self.summarization_queue.get(), timeout=1.0)
-                
                 task = asyncio.create_task(self._execute_summarization_task(task_data, worker_id))
                 self.active_tasks[task_data['task_id']] = task
+                
                 self.task_status[task_data['task_id']].update({
                     'started_at': datetime.now(),
                     'status': 'processing',
                     'worker_id': worker_id
                 })
                 
-                # Remove from active tasks when done
                 task.add_done_callback(lambda t, tid=task_data['task_id']: self._handle_task_completion(tid))
                 
             except asyncio.TimeoutError:
-                continue
+                continue  # No tasks in queue, continue waiting
             except Exception as e:
                 logger.error(f"❌ Error in summarization worker {worker_id}: {e}")
 
@@ -179,14 +165,11 @@ class BackgroundTaskManager:
         try:
             logger.info(f"🔄 Worker {worker_id} starting summarization: {task_id} for article {article_id}")
             
-            # Get database session for this task
-            async with get_db() as db_session:
-                # Get the article
-                article = await article_crud.get_article(db_session, article_id)
+            async with self.async_session_factory() as db_session:
+                article = await article_crud.get_article_by_id(db_session, article_id)
                 if not article:
                     raise ValueError(f"Article {article_id} not found")
                 
-                # Process through summary pipeline
                 summary = await summary_pipeline.process_article(
                     db=db_session,
                     article=article,
@@ -195,7 +178,6 @@ class BackgroundTaskManager:
                 )
                 
                 if summary:
-                    # Update task status
                     self.task_status[task_id].update({
                         'completed_at': datetime.now(),
                         'status': 'completed',
@@ -211,6 +193,7 @@ class BackgroundTaskManager:
                     
         except Exception as e:
             logger.error(f"❌ Worker {worker_id} failed summarization: {task_id} - {e}")
+            logger.error(f"🔍 Stack trace: {traceback.format_exc()}")
             self.task_status[task_id].update({
                 'completed_at': datetime.now(),
                 'status': 'failed',
@@ -218,14 +201,34 @@ class BackgroundTaskManager:
             })
             
             try:
-                async with get_db() as db_session:
-                    await summary_crud.mark_summary_failed(db_session, task_data['summary_id'], str(e))
+                async with self.async_session_factory() as db_session:
+                    summary_record = await summary_crud.get_summary_by_task_id(db_session, task_id)
+                    if summary_record:
+                        await summary_crud.mark_summary_failed(db_session, summary_record.id, str(e))
             except Exception as db_error:
-                logger.error(f"❌ Failed to update summary status: {db_error}")
+                logger.error(f"❌ Failed to update summary status in database: {db_error}")
             
             return {'success': False, 'error': str(e)}
     
-    async def submit_article_for_summarization(
+    async def submit_articles_for_summarization(self, article_ids:List[int]):
+        async with self.async_session_factory() as db_session:
+            submit_articles = await article_crud.get_articles_by_ids(db_session, article_ids=article_ids, include_summary=False)
+
+            task_ids = []
+            for article in submit_articles:
+                task_id = await self._submit_article_for_summarization(
+                    db=db_session,
+                    article_id=article.id,
+                    article_content=article.content,
+                    article_title=article.title,
+                    quality_level="standard"
+                )
+                if task_id:
+                    task_ids.append(task_id)
+            
+            return task_ids
+    
+    async def _submit_article_for_summarization(
         self, 
         db: AsyncSession,
         article_id: int,
@@ -238,7 +241,7 @@ class BackgroundTaskManager:
         task_id = str(uuid.uuid4())
         
         try:
-            summary = Summary(
+            summary_create = SummaryCreate(
                 article_id=article_id,
                 task_id=task_id,
                 status='pending',
@@ -251,32 +254,28 @@ class BackgroundTaskManager:
                 processing_time_ms=0,
                 is_successful=False
             )
-            
-            db.add(summary)
-            await db.commit()
-            await db.refresh(summary)
-            
-            task_data = {
-                'task_id': task_id,
-                'type': TaskType.SUMMARIZATION,
-                'article_id': article_id,
-                'article_content': article_content,
-                'article_title': article_title,
-                'preferred_provider': preferred_provider,
-                'quality_level': quality_level,
-                'summary_id': summary.id,
-                'submitted_at': datetime.now(),
-                'status': 'pending'
-            }
-            
-            await self.summarization_queue.put(task_data)
-            self.task_status[task_id] = task_data
-            
-            logger.info(f"📥 Submitted article {article_id} for summarization. Task: {task_id}")
-            return task_id
-            
+            summary_created = await summary_crud.create_summary(db, summary_create)
+
+            if summary_created: 
+                task_data = {
+                    'task_id': task_id,
+                    'type': TaskType.SUMMARIZATION,
+                    'article_id': article_id,
+                    'article_content': article_content,
+                    'article_title': article_title,
+                    'preferred_provider': preferred_provider,
+                    'quality_level': quality_level,
+                    'summary_id': summary_created.id,
+                    'submitted_at': datetime.now(),
+                    'status': 'pending'
+                }
+        
+                await self.summarization_queue.put(task_data)
+                self.task_status[task_id] = task_data
+                return task_id
+        
         except Exception as e:
-            await db.rollback()
+            db.rollback()
             logger.error(f"❌ Failed to submit article {article_id} for summarization: {e}")
             raise
     
@@ -288,31 +287,53 @@ class BackgroundTaskManager:
             del self.active_tasks[task_id]
     
     async def recover_pending_tasks(self, db_session: AsyncSession):
-        """Recover pending tasks from database"""
+        """Recover pending tasks by creating new summaries and deleting old ones"""
         logger.info("🔄 Recovering pending tasks...")
         
         try:
             pending_summaries = await summary_crud.get_pending_summaries(db_session)
+            recovered_count = 0
+            
             for summary in pending_summaries:
+                try:
+                    article = await article_crud.get_article_by_id(db_session, summary.article_id)
+                    
+                    if not article or not article.content or len(article.content.strip()) < 50:
+                        logger.warning(f"⚠️ Article {summary.article_id} not found or has insufficient content")
+                        await summary_crud.mark_summary_failed(
+                            db_session, 
+                            summary.id, 
+                            "Article not found or insufficient content"
+                        )
+                        continue
+                    
 
-                article = await article_crud.get_article_by_id(db_session, summary.article_id)
-
-                if article and article.content:
-                    await self.submit_article_for_summarization(
+                    await summary_crud.delete_summary(db_session, summary.id)
+                    
+                    task_id = await self._submit_article_for_summarization(
                         db=db_session,
                         article_id=article.id,
                         article_content=article.content,
                         article_title=article.title,
+                        preferred_provider=summary.provider if summary.provider else None,
                         quality_level=summary.quality_level
                     )
-                    logger.info(f"🔄 Recovered pending summary task for article {article.id}")
+                    
+                    if task_id:
+                        logger.info(f"🔄 Replaced pending summary {summary.id} with new task {task_id}")
+                        recovered_count += 1
+                        
+                except Exception as e:
+                    logger.error(f"❌ Error recovering summary {summary.id}: {e}")
+                    await summary_crud.mark_summary_failed(db_session, summary.id, f"Recovery error: {str(e)}")
             
-            logger.info(f"✅ Recovered {len(pending_summaries)} pending summarization tasks")
+            await db_session.commit()
+            logger.info(f"✅ Recovered {recovered_count} pending summarization tasks")
             
         except Exception as e:
-            logger.error(f"❌ Error recovering pending tasks: {e}")
-    
-    # YET UNUSED METHODS
+            await db_session.rollback()
+            logger.error(f"❌ Error in recover_pending_tasks: {e}")
+
     async def get_active_tasks_count(self) -> int:
         """Get number of actively processing tasks"""
         return len(self.active_tasks)
@@ -327,230 +348,12 @@ class BackgroundTaskManager:
             'aggregation': self.aggregation_queue.qsize(),
             'summarization': self.summarization_queue.qsize()
         }
-    
-    
-    #------------------------------------------------------------------
-    # async def submit_article_for_summarization(
-    #     self, 
-    #     db: AsyncSession,
-    #     article_id: int,
-    #     article_content: str,
-    #     article_title: str,
-    #     preferred_provider: Optional[str] = None,
-    #     quality_level: str = "standard"
-    # ) -> str:
-    #     """
-    #     Submit article for background summarization
-    #     Returns task_id for status tracking
-    #     """
-    #     task_id = str(uuid.uuid4())
-        
-    #     try:
-    #         summary = Summary(
-    #             article_id=article_id,
-    #             task_id=task_id,
-    #             status='pending',
-    #             content='',  
-    #             provider='', 
-    #             model_name='',
-    #             quality_level=quality_level,
-    #             word_count=0,
-    #             char_count=0,
-    #             processing_time_ms=0,
-    #             is_successful=False
-    #         )
-    #         summary_create = SummaryCreate(**summary.__dict__)
-    #         summary_created = await summary_crud.create_summary(db, summary_create)
-            
-    #         self.task_status[task_id] = {
-    #             'task_id': task_id,
-    #             'article_id': article_id,
-    #             'article_title': article_title,
-    #             'status': 'pending',
-    #             'submitted_at': datetime.now(),
-    #             'started_at': None,
-    #             'completed_at': None,
-    #             'preferred_provider': preferred_provider,
-    #             'quality_level': quality_level,
-    #             'error': None,
-    #             'summary_id': summary_created.id
-    #         }
-            
-    #         task_data = {
-    #             'task_id': task_id,
-    #             'db': db,
-    #             'article_id': article_id,
-    #             'article_content': article_content,
-    #             'article_title': article_title,
-    #             'preferred_provider': preferred_provider,
-    #             'quality_level': quality_level
-    #         }
-            
-    #         await self.task_queue.put(task_data)
-    #         logger.info(f"📥 Submitted article {article_id} for background summarization. Task: {task_id}")
-            
-    #         return task_id
-            
-    #     except Exception as e:
-    #         await db.rollback()
-    #         logger.error(f"❌ Failed to submit article {article_id} for summarization: {e}")
-    #         raise
-    
-    
-    # async def _process_single_task(self, task_data: dict):
-    #     """
-    #     Process a single summarization task
-    #     """
-    #     task_id = task_data['task_id']
-    #     db = task_data['db']
-        
-    #     try:
-    #         self.task_status[task_id].update({
-    #             'status': 'processing',
-    #             'started_at': datetime.now()
-    #         })
-            
-    #         await self._update_summary_status(db, task_id, 'processing', started_at=datetime.now())
-            
-    #         logger.info(f"🔄 Processing task {task_id} for article {task_data['article_id']}")
-            
-    #         summary = await self._process_with_pipeline(db, task_data)
-            
-    #         if summary and summary.is_successful:
-    #             self.task_status[task_id].update({
-    #                 'status': 'completed',
-    #                 'completed_at': datetime.now(),
-    #                 'summary_id': summary.id
-    #             })
-    #             logger.info(f"✅ Task {task_id} completed successfully. Summary ID: {summary.id}")
-    #         else:
-    #             error_msg = "Summarization failed"
-    #             if summary and summary.error_message:
-    #                 error_msg = summary.error_message
-                    
-    #             self.task_status[task_id].update({
-    #                 'status': 'failed',
-    #                 'completed_at': datetime.now(),
-    #                 'error': error_msg
-    #             })
-    #             await self._update_summary_status(db, task_id, 'failed', error_message=error_msg)
-                
-    #     except Exception as e:
-    #         error_msg = str(e)
-    #         self.task_status[task_id].update({
-    #             'status': 'error',
-    #             'completed_at': datetime.now(),
-    #             'error': error_msg
-    #         })
-    #         await self._update_summary_status(db, task_id, 'error', error_message=error_msg)
-    #         logger.error(f"💥 Task {task_id} error: {e}")
-        
-    #     finally:
-    #         self.active_tasks.pop(task_id, None)
-    
-    # async def _process_with_pipeline(self, db: AsyncSession, task_data: dict) -> Optional[Summary]:
-    #     try:
-    #         article = await article_crud.get_article_by_id(db, task_data['article_id'])
-            
-    #         if article is None:
-    #             raise ValueError(f"Article {task_data['article_id']} not found")
-            
-    #         summary = await summary_pipeline.process_article(
-    #             db=db,
-    #             article=article,
-    #             preferred_provider=task_data['preferred_provider'],
-    #             quality_level=task_data['quality_level']
-    #         )
-            
-    #         return summary
-        
-    #     except Exception as e:
-    #         logger.error(f"❌ Pipeline processing error for article {task_data['article_id']}: {e}")
-    #         return None
-    
 
-    # async def _update_summary_status(
-    #     self, 
-    #     db: AsyncSession, 
-    #     task_id: str, 
-    #     status: str, 
-    #     started_at: datetime = None,
-    #     error_message: str = None
-    # ):
-    #     """Update summary status in database"""
-    #     from sqlalchemy import update
-        
-    #     try:
-    #         update_data = {'status': status}
-    #         if started_at:
-    #             update_data['started_at'] = started_at
-    #         if error_message:
-    #             update_data['error_message'] = error_message
-    #         if status in ['completed', 'failed', 'error']:
-    #             update_data['completed_at'] = datetime.now()
-            
-    #         await db.execute(
-    #             update(Summary)
-    #             .where(Summary.task_id == task_id)
-    #             .values(update_data)
-    #         )
-    #         await db.commit()
-            
-    #     except Exception as e:
-    #         await db.rollback()
-    #         logger.error(f"❌ Failed to update summary status for task {task_id}: {e}")
-    #         raise
     
     def get_task_status(self, task_id: str) -> Optional[Dict]:
         """Get status of a specific task"""
         return self.task_status.get(task_id)
-    
-    # async def _get_task_status_from_db(self, task_id: str) -> Optional[dict]:
-    #     """Get task status from database"""
-        
-    #     async with AsyncSessionLocal() as db:
-    #         try:
-    #             result = await db.execute(
-    #                 select(Summary).where(Summary.task_id == task_id)
-    #             )
-    #             summary = result.scalar_one_or_none()
-                
-    #             if not summary:
-    #                 return None
-                
-    #             task_status = {
-    #                 'task_id': task_id,
-    #                 'article_id': summary.article_id,
-    #                 'article_title': self._get_article_title_from_db(db, summary.article_id),
-    #                 'status': summary.status,
-    #                 'submitted_at': summary.created_at,
-    #                 'started_at': summary.started_at,
-    #                 'completed_at': summary.completed_at,
-    #                 'preferred_provider': None,  
-    #                 'quality_level': summary.quality_level,
-    #                 'error': summary.error_message,
-    #                 'summary_id': summary.id
-    #             }
-                
-    #             self.task_status[task_id] = task_status
-                
-    #             return task_status
-                
-    #         except Exception as e:
-    #             logger.error(f"Error retrieving task status from database for {task_id}: {e}")
-    #             return None
 
-    # async def _get_article_title_from_db(self, db, article_id: int) -> str:
-    #     """Get article title from database"""
-        
-    #     try:
-    #         result = await db.execute(
-    #             select(Article.title).where(Article.id == article_id)
-    #         )
-    #         title = result.scalar_one_or_none()
-    #         return title or "Unknown Article"
-    #     except Exception:
-    #         return "Unknown Article"
     
     async def get_article_tasks(self, article_id: int) -> list:
         """Get all tasks for a specific article"""
@@ -562,90 +365,7 @@ class BackgroundTaskManager:
     async def get_pending_tasks_count(self) -> int:
         """Get number of pending tasks in queue"""
         return self.task_queue.qsize()
-    
-    # async def recover_pending_tasks(self, db) -> None:
-    #     """Recover pending tasks from database on startup"""
 
-    #     try:
-    #         result = await db.execute(
-    #             select(Summary).where(Summary.status.in_(['pending', 'processing']))
-    #         )
-    #         pending_summaries = result.scalars().all()
-            
-    #         for summary in pending_summaries:
-    #             task_id = summary.task_id
-    #             article_id = summary.article_id
-                
-    #             article_result = await db.execute(
-    #                 select(Article).where(Article.id == article_id)
-    #             )
-    #             article = article_result.scalar_one_or_none()
-                
-    #             if not article:
-    #                 continue
-                
-    #             task_data = {
-    #                 'task_id': task_id,
-    #                 'db': db,
-    #                 'article_id': article_id,
-    #                 'article_content': article.content,
-    #                 'article_title': article.title,
-    #                 'preferred_provider': None,
-    #                 'quality_level': summary.quality_level
-    #             }
-                
-    #             await self.task_queue.put(task_data)
-                
-    #             self.task_status[task_id] = {
-    #                 'task_id': task_id,
-    #                 'article_id': article_id,
-    #                 'article_title': article.title,
-    #                 'status': summary.status,
-    #                 'submitted_at': summary.created_at,
-    #                 'started_at': summary.started_at,
-    #                 'completed_at': summary.completed_at,
-    #                 'preferred_provider': None,
-    #                 'quality_level': summary.quality_level,
-    #                 'error': summary.error_message,
-    #                 'summary_id': summary.id
-    #             }
-                
-    #         logger.info(f"♻️ Recovered {len(pending_summaries)} pending tasks from database")
-            
-    #     except Exception as e:
-    #         logger.error(f"❌ Failed to recover pending tasks: {e}")    
-    
-    # async def _cleanup_completed_tasks(self):
-    #     """Clean up old completed tasks to prevent memory leaks"""
-    #     current_time = datetime.now()
-    #     tasks_to_remove = []
-        
-    #     for task_id, status in self.task_status.items():
-    #         if status['status'] in ['completed', 'failed', 'error']:
-    #             # Remove tasks older than 1 hour from memory
-    #             if status['completed_at'] and (current_time - status['completed_at']).total_seconds() > 3600:
-    #                 tasks_to_remove.append(task_id)
-        
-    #     for task_id in tasks_to_remove:
-    #         self.task_status.pop(task_id, None)
-    
-    # async def shutdown(self):
-    #     """Gracefully shutdown the task manager"""
-    #     logger.info("🛑 Shutting down background task manager...")
-    #     self.is_running = False
-        
-    #     # Wait for current tasks to complete (with timeout)
-    #     if self.active_tasks:
-    #         logger.info(f"Waiting for {len(self.active_tasks)} active tasks to complete...")
-    #         try:
-    #             await asyncio.wait_for(
-    #                 asyncio.gather(*self.active_tasks.values(), return_exceptions=True),
-    #                 timeout=30.0
-    #             )
-    #         except asyncio.TimeoutError:
-    #             logger.warning("Timeout waiting for active tasks to complete")
-        
-    #     logger.info("✅ Background task manager shutdown complete")
 
 task_manager = BackgroundTaskManager()
 

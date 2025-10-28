@@ -1,14 +1,16 @@
 from typing import List, Optional, Dict, Any
 from sqlalchemy import desc, func, or_
-from app.models.article import Article
-from app.models.summary import Summary
-from app.models.topic import Topic 
-from app.schemas.article import ArticleCreate, ArticleUpdate
+from app.models import Topic, Article
+from app.schemas import ArticleCreate, ArticleUpdate, ArticleBase
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
+from app.core.config import setup_colored_logging
+
+
+logger = setup_colored_logging()
 
 async def create_article(db: AsyncSession, article: ArticleCreate) -> Article:
     """Create a new article - async version"""
@@ -24,6 +26,7 @@ async def create_article(db: AsyncSession, article: ArticleCreate) -> Article:
         topic_id=article.topic_id,
         is_processed=False
     )
+    
     db.add(db_article)
     await db.commit()
     await db.refresh(db_article)
@@ -44,7 +47,54 @@ async def get_article_by_id(db: AsyncSession, article_id: int, include_summary: 
     result = await db.execute(query)    
     return result.scalar_one_or_none()
 
-# ------- not confirmed if used anywhere -------
+async def get_articles_by_ids(db: AsyncSession, article_ids: List[int], include_summary: bool = True) -> List[Article]:
+    """Get articles by IDs, optionally including summary"""
+    query = select(Article).where(Article.id.in_(article_ids)).order_by(Article.created_at.desc())
+    
+    if include_summary:
+        query = query.options(selectinload(Article.summary))
+    
+    result = await db.execute(query)    
+    return result.scalars().all()
+
+
+async def get_articles_with_summaries(
+    db: AsyncSession, 
+    skip: int = 0, 
+    limit: int = 100,
+    topic_name: Optional[str] = None
+):
+
+    query = (
+        select(Article)
+        .options(
+            selectinload(Article.summary), 
+            selectinload(Article.topic)   
+        )
+        .where(Article.is_processed == True)  
+        .offset(skip)
+        .limit(limit)
+        .order_by(Article.created_at.desc())
+    )
+    
+    if topic_name:
+        query = query.join(Topic).where(Topic.name == topic_name)
+    
+    result = await db.execute(query)
+    articles = result.scalars().all()
+    
+    return articles
+
+async def get_articles_with_summaries_count(db: AsyncSession, topic_name: Optional[str] = None):
+    query = select(func.count(Article.id)).where(Article.is_processed == True)
+    
+    if topic_name:
+        query = query.join(Topic).where(Topic.name == topic_name)
+    
+    result = await db.execute(query)
+    count = result.scalar()
+    
+    return count
 
 
 async def get_articles_by_topic(
@@ -280,27 +330,6 @@ async def get_processing_stats(db: AsyncSession, topic_id: Optional[int] = None)
         "success_rate": round(success_rate, 2)
     }
 
-async def get_articles_with_summaries(
-    db: AsyncSession,
-    topic_id: Optional[int] = None,
-    skip: int = 0,
-    limit: int = 50
-) -> List[Article]:
-    """Get articles that have summaries (eager load the summaries)"""
-    query = (
-        select(Article)
-        .join(Summary, Article.id == Summary.article_id)
-        .where(Article.is_processed == True)
-    )
-    
-    if topic_id:
-        query = query.where(Article.topic_id == topic_id)
-    
-    query = query.options(selectinload(Article.summary))
-    query = query.offset(skip).limit(limit)
-    result = await db.execute(query)
-    return result.scalars().all()
-
 async def search_articles(
     db: AsyncSession,
     query_text: str,
@@ -308,7 +337,7 @@ async def search_articles(
     include_summaries: bool = True,
     skip: int = 0,
     limit: int = 50
-) -> List[Article]:
+) -> List[ArticleBase]:
     """Search articles by title and content"""
     search_query = f"%{query_text}%"
     

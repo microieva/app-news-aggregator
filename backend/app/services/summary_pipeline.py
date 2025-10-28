@@ -5,9 +5,9 @@ import traceback
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 
-from app.services.llm.provider_manager import provider_manager
+from app.services.llm import provider_manager
 from app.models import Article, Summary
-from app.schemas.summary import SummaryCreate
+from app.schemas import SummaryUpdate
 from app.crud import summary as summary_crud
 
 logger = setup_colored_logging()
@@ -47,14 +47,13 @@ class SummaryPipeline:
         
         try:
             # Step 1: Check if summary already exists
-            logger.info(f"🔍 Checking for existing summary...")
             existing_summary = await self._get_existing_summary(db, article.id)
 
-            if existing_summary:
-                logger.warning(f"⚠️ Summary already exists for article {article.id}")
+            if existing_summary and existing_summary.status == "complete":
+                logger.warning(f"⚠️ Complete summary already exists for article {article.id}")
                 return existing_summary
-            else:
-                logger.info(f"📝 No existing summary found, proceeding with generation...")
+            elif existing_summary:
+                logger.info(f"📝 Existing summary found with status: {existing_summary.status}, regenerating...")
             
             # Step 2: Check if article has content
             if not article.content or len(article.content.strip()) < 50:
@@ -81,9 +80,9 @@ class SummaryPipeline:
             
             logger.info(f"✅ Summary generated successfully. Length: {len(summary_text)} chars")
             
-            # Step 4: Create and save Summary object
-            logger.info(f"💾 Saving summary to database...")
-            summary = await self._create_and_save_summary(
+            # Step 4: Updating Summary object
+            logger.info(f"💾 Updating summary in the database...")
+            summary = await self._update_summary_status(
                 db=db,
                 article_id=article.id,
                 summary_text=summary_text,
@@ -129,49 +128,53 @@ class SummaryPipeline:
             logger.error(f"❌ Error checking existing summary: {e}")
             return None
     
-    async def _create_and_save_summary(
-        self,
-        db: AsyncSession,
-        article_id: int,
-        summary_text: str,
-        provider_used: str,
-        model_used: str,
-        quality_level: str,
-        processing_time_ms: int
-    ) -> Summary:
-        """Create and save a Summary object to database"""
-        logger.info(f"💾 Creating summary for article {article_id}...")
-        
-        try:
-            summary_create = SummaryCreate(
-                article_id=article_id,
-                content=summary_text,
-                provider=provider_used,
-                model_name=model_used,
-                quality_level=quality_level,
-                word_count=len(summary_text.split()),
-                char_count=len(summary_text),
-                processing_time_ms=processing_time_ms,
-                is_successful=True
-            )
+    async def _update_summary_status(
+            self,
+            db: AsyncSession,
+            article_id: int,
+            summary_text: str,
+            provider_used: str,
+            model_used: str,
+            quality_level: str,
+            processing_time_ms: int
+        ) -> Summary:
+            """Update summary object in the database"""
+            logger.info(f"💾 Updating summary for article {article_id}...")
             
-            logger.info(f"🔍 Checking if summary already exists...")
-            existing_summary = await summary_crud.get_summary_by_article_id(db, article_id)
-
-            if existing_summary is None:
-                logger.info(f"📝 Creating new summary...")
-                summary = await summary_crud.create_summary(db, summary_create)
-                logger.info(f"✅ Summary created successfully with ID: {summary.id}")
+            try:
+                result = await db.execute(
+                    select(Summary).where(Summary.article_id == article_id)
+                )
+                existing_summary = result.scalar_one_or_none()
+                
+                if not existing_summary:
+                    logger.error(f"❌ No existing summary found for article {article_id}")
+                    raise ValueError(f"No existing summary found for article {article_id}")
+                
+                summary_updates = SummaryUpdate(
+                    status="complete",
+                    article_id=article_id,
+                    content=summary_text,
+                    provider=provider_used,
+                    model_name=model_used,
+                    quality_level=quality_level,
+                    word_count=len(summary_text.split()),
+                    char_count=len(summary_text),
+                    processing_time_ms=processing_time_ms,
+                    is_successful=True
+                )
+                
+                logger.info(f"🔍 Updating existing summary ID: {existing_summary.id}")
+                summary = await summary_crud.update_summary(db, existing_summary.id, summary_updates)
+                
+                await db.refresh(summary)
                 return summary
-            else:
-                logger.warning(f"⚠️ Summary already exists for article {article_id}")
-                return existing_summary
-            
-        except Exception as e:
-            logger.error(f"❌ Error in _create_and_save_summary: {e}")
-            logger.error(f"🔍 Stack trace: {traceback.format_exc()}")
-            await db.rollback()
-            raise e
+                
+            except Exception as e:
+                logger.error(f"❌ Error in _update_summary_status: {e}")
+                logger.error(f"🔍 Stack trace: {traceback.format_exc()}")
+                await db.rollback()
+                raise e
     
     async def _mark_article_processed(self, db: AsyncSession, article_id: int):
         """Mark article as successfully processed"""

@@ -22,7 +22,7 @@ class AggregationService:
             engine, class_=AsyncSession, expire_on_commit=False
         )
 
-    async def run_aggregation(self, topics: List[str] = None):
+    async def run_aggregation(self, topics: List[str] = None) -> int:
         """Run aggregation for specified topics"""
 
         async with self.async_session_factory() as db_session:
@@ -41,17 +41,18 @@ class AggregationService:
 
             try:
                 articles = await aggregation_orchestrator.aggregate_articles(topic)
-                
+                from app.core import task_manager
                 enhanced_articles = []
                 for article in articles:
                     enhanced_article = await self._enhance_article_with_topic(article, topic)
                     enhanced_articles.append(enhanced_article)
                 
-                total_articles += len(enhanced_articles)
-                
-                await self._save_articles_to_db(enhanced_articles)
-                
-                logger.info(f"✅ Topic '{topic}': {len(enhanced_articles)} articles processed, saved, and submitted for summarization")
+                saved_ids = await self._save_articles_to_db(enhanced_articles)
+                if saved_ids:  
+                    total_articles = len(saved_ids)  
+                    await task_manager.submit_articles_for_summarization(saved_ids)
+
+                logger.info(f"✅ Topic '{topic}': {total_articles} articles processed, saved, and submitted for summarization")
                 
             except Exception as e:
                 logger.error(f"❌ Error aggregating topic '{topic}': {e}")
@@ -90,45 +91,26 @@ class AggregationService:
             article['primary_topic'] = search_topic
             return article
     
-    async def _save_articles_to_db(self, articles: List[dict]) -> int:
-        """Save aggregated articles to the database"""
-        saved_count = 0
-        submitted_count = 0
+    async def _save_articles_to_db(self, articles: List[dict]) -> List[int]:
+        """Save aggregated articles to the database, return new article IDs"""
+        new_article_ids = []
         async with self.async_session_factory() as db_session:
             try:
                 for article_data in articles:
                     article_create = ArticleCreate(**article_data)
                     existing_article = await article_crud.get_by_url(db_session, article_create.url)
-                    from app.core import task_manager
                     
                     if not existing_article:
                         created_article = await article_crud.create_article(db_session, article_create)
-                        saved_count += 1
-                        
-                        if created_article:
-                            task_id = await task_manager.submit_article_for_summarization(
-                                db=db_session,
-                                article_id=created_article.id,
-                                article_content=created_article.content,
-                                article_title=created_article.title,
-                                preferred_provider=None,
-                                quality_level="standard"
-                            )
-                            if task_id:
-                                submitted_count += 1
-                                logger.debug(f"🆕 Article submitted for summarization: {created_article.id}")
-                    else:
-                        logger.debug(f"📝 Article already exists: {article_create.title}")
+                        new_article_ids.append(created_article.id)
                 
                 await db_session.commit()
-                logger.info(f"✅ Saved {saved_count} new articles to database")
-                logger.info(f"✅ Submitted {submitted_count} articles for summarization")
-
+                
             except Exception as e:
                 await db_session.rollback()
-                logger.error(f"❌ Error in saving/submitting articles: {e}")
-                logger.error(f"🔍 Stack trace: {traceback.format_exc()}")
+                logger.error(f"❌ Error saving articles: {e}")
+                raise
         
-        return saved_count            
+        return new_article_ids
 
 aggregation_service = AggregationService()
