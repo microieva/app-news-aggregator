@@ -96,54 +96,47 @@ async def get_articles_with_summaries_count(db: AsyncSession, topic_name: Option
     
     return count
 
-
-async def get_articles_by_topic(
-    db: AsyncSession, 
-    topic_id: int, 
-    skip: int = 0, 
+async def get_articles_by_topic_name(
+    db: AsyncSession,
+    topic_name: str,
+    skip: int = 0,
     limit: int = 50,
     sort_by: str = "published_at",
-    sort_order: str = "desc",
-    include_summaries: bool = True,
-    only_processed: bool = False,
-    only_unprocessed: bool = False
+    sort_order: str = "desc"
 ) -> List[Article]:
-    """Get articles by topic ID with sorting and filtering options"""
-    query = select(Article).where(Article.topic_id == topic_id)
+    """
+    Get articles by topic name with sorting and pagination.
+    """
+    sort_column_mapping = {
+        "published_at": Article.published_at,
+        "created_at": Article.created_at,
+        "title": Article.title
+    }
     
-    if only_processed:
-        query = query.where(Article.is_processed == True)
-    elif only_unprocessed:
-        query = query.where(Article.is_processed == False)
+    sort_column = sort_column_mapping.get(sort_by, Article.published_at)
     
-    if sort_by == "published_at":
-        if sort_order == "desc":
-            query = query.order_by(desc(Article.published_at))
-        else:
-            query = query.order_by(Article.published_at)
-    elif sort_by == "created_at":
-        if sort_order == "desc":
-            query = query.order_by(desc(Article.created_at))
-        else:
-            query = query.order_by(Article.created_at)
-    elif sort_by == "title":
-        if sort_order == "desc":
-            query = query.order_by(desc(Article.title))
-        else:
-            query = query.order_by(Article.title)
-    elif sort_by == "processing_status":
-        if sort_order == "desc":
-            query = query.order_by(desc(Article.is_processed))
-        else:
-            query = query.order_by(Article.is_processed)
+    if sort_order.lower() == "desc":
+        order_by_clause = sort_column.desc()
+    else:
+        order_by_clause = sort_column.asc()
     
-    query = query.offset(skip).limit(limit)
-    
-    if include_summaries:
-        query = query.options(selectinload(Article.summary))
+    query = (
+        select(Article)
+        .options(
+            selectinload(Article.summary), 
+            selectinload(Article.topic)   
+        )
+        .join(Topic, Article.topic_id == Topic.id)
+        .where(Topic.name == topic_name)          
+        .order_by(order_by_clause)
+        .offset(skip)
+        .limit(limit)
+    )
     
     result = await db.execute(query)
-    return result.scalars().all()
+    articles = result.scalars().all()
+    
+    return articles
 
 async def get_articles_by_source(
     db: AsyncSession, 

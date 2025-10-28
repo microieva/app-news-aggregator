@@ -39,12 +39,12 @@ async def startup():
     #     name="Aggregation"
     # )
     # for dev 
-    cron_manager.add_one_time_job(
-        func=aggregation_service.run_aggregation,
-        name="Aggregation"
-    )
+    # cron_manager.add_one_time_job(
+    #     func=aggregation_service.run_aggregation,
+    #     name="Aggregation"
+    # )
 
-    cron_manager.start()
+    #cron_manager.start()
     logger.info("✅ Cron manager started")
 
 async def shutdown():

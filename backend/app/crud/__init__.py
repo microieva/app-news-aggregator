@@ -1,9 +1,9 @@
 from .topic import (
     get_topic, get_topic_by_name, get_all, create_topic, 
-    update_topic, delete_topic, get_topics_count
+    update_topic, delete_topic, get_topics_count, get_used_topics, get_used_topics_count, get_topic_id_by_name
 )
 from .article import (
-    get_article_by_id, get_articles_by_topic, get_articles_by_source,
+    get_article_by_id, get_articles_by_source, get_articles_by_topic_name,
     create_article, create_articles_bulk, update_article, get_articles_by_ids,
     delete_article, get_articles_count, get_articles_with_summaries, get_articles_with_summaries_count
 )
@@ -14,9 +14,9 @@ from .summary import (
 )
 
 __all__ = [
-    "get_topic", "get_topic_by_name", "get_topics", "create_topic",
-    "update_topic", "delete_topic", "get_topics_count",
-    "get_article_by_id", "get_articles_by_topic", "get_articles_by_source",
+    "get_topic", "get_topic_by_name", "get_topics", "create_topic", "get_all",
+    "update_topic", "delete_topic", "get_topics_count", "get_used_topics", "get_used_topics_count", "get_topic_id_by_name",
+    "get_article_by_id", "get_articles_by_topic", "get_articles_by_source", "get_articles_by_topic_name",
     "create_article", "create_articles_bulk", "update_article", "get_articles_by_ids",
     "delete_article", "get_articles_count", "get_articles_with_summaries", "get_articles_with_summaries_count",
     "get_summary", "get_summaries_with_articles", "get_summaries_by_topic",

@@ -1,9 +1,12 @@
-from pydantic import BaseModel, ConfigDict
-from app.schemas import ArticleList
+from typing import Generic, TypeVar, Optional
+from pydantic import BaseModel
 
+T = TypeVar('T')
 
-class ApiResponse(BaseModel):
-  data: ArticleList
-
-  class Config:
+class ApiResponse(BaseModel, Generic[T]):
+    data: T
+    message: Optional[str] = None
+    success: bool = True
+    
+    class Config:
         from_attributes = True

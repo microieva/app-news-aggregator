@@ -32,8 +32,75 @@ async def read_articles_with_summaries(
         )
     else:  
         raise HTTPException(status_code=404, detail="No articles with summaries found")
+    
 
-@router.get("/by-topic/{topic_id}", response_model=ArticleList)
+@router.get("/topic-name/{topic_name}", response_model=ApiResponse)
+async def read_articles_by_topic(
+    topic_name: str,
+    skip: int = Query(0, ge=0, description="Number of articles to skip"),
+    limit: int = Query(50, ge=1, le=200, description="Number of articles to return"),
+    sort_by: str = Query("published_at", description="Sort by field"),
+    sort_order: str = Query("desc", description="Sort order (asc/desc)"),
+    include_summary: bool = Query(False, description="Include summary status for each article"),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get articles by topic name with sorting and pagination"""
+    #const route = category.replace(/ /g, '-');
+    name = topic_name.replace('-', ' ')
+    valid_sort_fields = ["published_at", "created_at", "title"]
+    if sort_by not in valid_sort_fields:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Invalid sort field. Must be one of: {valid_sort_fields}"
+        )
+    
+    if sort_order not in ["asc", "desc"]:
+        raise HTTPException(
+            status_code=400, 
+            detail="Invalid sort order. Must be 'asc' or 'desc'"
+        )
+    
+    articles = await article_crud.get_articles_by_topic_name(
+        db=db, 
+        topic_name=name, 
+        skip=skip, 
+        limit=limit,
+        sort_by=sort_by,
+        sort_order=sort_order
+    )
+    
+    total = await article_crud.get_articles_with_summaries_count(db, topic_name=name)
+    
+    # enhanced_articles = []
+    # for article in articles:
+    #     article_dict = article.to_dict() if hasattr(article, 'to_dict') else dict(article)
+        
+    #     if include_summary_status:
+    #         tasks = await task_manager.get_article_tasks(article.id)
+    #         latest_task = tasks[-1] if tasks else None
+            
+    #         article_dict["summary_status"] = {
+    #             "is_processed": article.is_processed,
+    #             "has_summary": hasattr(article, 'summary') and article.summary is not None,
+    #             "latest_task": latest_task
+    #         }
+        
+    #     enhanced_articles.append(article_dict)
+    
+    if articles:
+        api_response = ArticleList(
+            articles=articles,
+            total=total,
+            topic_name=name 
+        )
+        return ApiResponse(
+            data=api_response
+        )
+    else:  
+        raise HTTPException(status_code=404, detail="No articles found for topic {name}")
+
+
+@router.get("/topic/{topic_id}", response_model=ApiResponse)
 async def read_articles_by_topic(
     topic_id: int,
     skip: int = Query(0, ge=0, description="Number of articles to skip"),

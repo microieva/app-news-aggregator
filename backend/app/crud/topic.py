@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import distinct, select, func
 from typing import List, Optional
-from app.models.topic import Topic
+from app.models import Topic, Article
 from app.schemas.topic import TopicCreate, TopicUpdate
 
 async def create_topic(db: AsyncSession, *, obj_in: TopicCreate) -> Topic:
@@ -31,6 +31,36 @@ async def get_topic_id_by_name(name: str, db: AsyncSession) -> Optional[int]:
     )
     topic_id = result.scalar_one_or_none()
     return topic_id
+
+async def get_used_topics(db: AsyncSession, skip: int = 0, limit: int = 100) -> List[Topic]:
+    topic_ids_query = (
+        select(distinct(Article.topic_id))
+        .where(Article.topic_id.is_not(None))
+        .offset(skip)
+        .limit(limit)
+    )
+    
+    topic_ids_result = await db.execute(topic_ids_query)
+    topic_ids = topic_ids_result.scalars().all()
+    
+    if not topic_ids:
+        return []
+    
+    topics_query = (
+        select(Topic)
+        .where(Topic.id.in_(topic_ids))
+        .order_by(Topic.name) 
+    )
+    
+    topics_result = await db.execute(topics_query)
+    topics = topics_result.scalars().all()
+    
+    return topics
+
+async def get_used_topics_count(db: AsyncSession) -> int:
+    query = select(func.count(Topic.id)).where(Article.topic_id.is_not(None))
+    result = await db.execute(query)
+    return result.scalar_one()
 
 # ------- not confirmed if used anywhere -------
 
