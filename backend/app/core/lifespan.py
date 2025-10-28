@@ -36,7 +36,6 @@ async def startup():
 
     # cron_manager.add_aggregation_job(
     #     func=aggregation_service.run_aggregation,
-    #     interval_minutes=30,
     #     name="Aggregation"
     # )
     # for dev 

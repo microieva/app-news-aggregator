@@ -1,3 +1,4 @@
+import uuid
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from app.core.config import setup_colored_logging
@@ -13,13 +14,16 @@ class CronManager:
         self.jobs: Dict[str, dict] = {}
         self._task_processor = None
     
-    def add_aggregation_job(self, func, interval_minutes: int = 5, name: str = "Unnamed Job"):
+    def add_aggregation_job(self, func, name: str = "Unnamed Job"):
         """Add a job that runs at fixed intervals"""
-        job_id = f"{name}_{interval_minutes}min"
+        id = str(uuid.uuid4())
+        job_id = f"{name}_{id}"
         
         job = self.scheduler.add_job(
             func,
-            trigger=IntervalTrigger(minutes=interval_minutes),
+            trigger='cron',
+            minute=0,
+            hour='4-23/2',
             id=job_id,
             name=name,
             replace_existing=True
@@ -27,11 +31,10 @@ class CronManager:
         
         self.jobs[job_id] = {
             'name': name,
-            'interval_minutes': interval_minutes,
             'next_run': job._get_run_times
         }
         
-        logger.info(f"📅 Scheduled job '{name}' to run every {interval_minutes} minutes")
+        logger.info(f"📅 Scheduled job '{name}' to run every 4 hours (4am - midnight)")
         return job_id
     
     def add_one_time_job(self, func, name: str = "Unnamed Startup Job"):
