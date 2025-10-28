@@ -3,9 +3,8 @@ from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
 
-from app.core.database import engine, Base
-from app.core import task_manager, cron_manager, setup_colored_logging
-from app.services import topic_initializer
+from app.core import engine, Base, task_manager, cron_manager, setup_colored_logging
+from app.services import topic_initializer, aggregation_service
 
 logger = setup_colored_logging()
 
@@ -16,7 +15,7 @@ async def app_lifespan(app:FastAPI):
     await shutdown()
 
 async def startup():
-    logger.info("\n\n\n\n\n 🚀 Starting News Aggregator Application...\n\n\n\n\n")
+    logger.info("\n\n\n 🚀 Starting News Aggregator Application...\n\n\n")
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -40,14 +39,13 @@ async def startup():
     #     interval_minutes=30,
     #     name="Aggregation"
     # )
-    # for dev - not needed because it runs from task_manager calls above
-    # cron_manager.add_one_time_job(
-    #     func=aggregation_service.run_aggregation,
-    #     name="Aggregation"
-    # )
+    # for dev 
+    cron_manager.add_one_time_job(
+        func=aggregation_service.run_aggregation,
+        name="Aggregation"
+    )
 
-    # # Will be needed for production where we will have the cron job: 
-    # cron_manager.start()
+    cron_manager.start()
     logger.info("✅ Cron manager started")
 
 async def shutdown():

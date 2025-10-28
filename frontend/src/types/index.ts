@@ -5,8 +5,3 @@ export interface Topic {
   updatedAt: string
 }
 
-export interface ApiResponse<T> {
-  data: T
-  message: string
-  success: boolean
-}

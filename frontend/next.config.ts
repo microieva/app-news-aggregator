@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true
   },
+    env: {
+    CUSTOM_KEY: process.env.CUSTOM_KEY,
+  },
   // React 19 and Turbopack configuration
   experimental: {
     turbo: {

@@ -1,7 +1,7 @@
 import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.crud import topic as topic_crud
-from app.schemas.topic import TopicCreate
+from app.schemas import TopicCreate
 from app.core.config import settings
 from sqlalchemy.orm import sessionmaker
 from app.core.database import engine

@@ -1,28 +1,29 @@
-from .topic import Topic, TopicCreate, TopicUpdate, TopicWithArticles, TopicList
-from .article import Article, ArticleCreate, ArticleUpdate, ArticleWithSummary, ArticleList, ArticleListWithSummaries, ArticleProcessingStatus, BulkProcessingResult, TaskStatusResponse, ArticleWithSummaryStatus
-from .summary import Summary, SummaryCreate, SummaryUpdate, SummaryWithArticle, SummarizeRequest, SummarizeResponse, BackgroundSummarizeResponse
+from .topic import TopicBase, TopicCreate, TopicUpdate, TopicWithArticles, TopicList
+from .article import ArticleBase, ArticleCreate, ArticleUpdate, ArticleList, ArticleProcessingStatus, BulkProcessingResult, TaskStatusResponse, ArticleWithSummaryStatus
+from .summary import SummaryBase, SummaryCreate, SummaryUpdate, SummaryWithArticle, SummarizeRequest, SummarizeResponse, BackgroundSummarizeResponse
+from .api import ApiResponse
 
 __all__ = [
-    "Topic",
+    "TopicBase",
     "TopicCreate",
     "TopicUpdate",
     "TopicWithArticles",
     "TopicList",
-    "Article",
+    "ArticleBase",
     "ArticleCreate",
     "ArticleUpdate",
-    "ArticleWithSummary",
+    # "ArticleWithSummary",
     "ArticleList",
-    "ArticleListWithSummaries",
     "TaskStatusResponse",
     "ArticleWithSummaryStatus",
     "ArticleProcessingStatus",
     "BulkProcessingResult",
-    "Summary",
+    "SummaryBase",
     "SummaryCreate",
     "SummaryUpdate",
     "SummaryWithArticle",
     "SummarizeRequest",
     "SummarizeResponse",
-    "BackgroundSummarizeResponse"
+    "BackgroundSummarizeResponse",
+    "ApiResponse"
 ]

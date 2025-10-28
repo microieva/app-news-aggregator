@@ -18,7 +18,8 @@ class Settings(BaseSettings):
     ALLOWED_HOSTS: list = [
         "http://localhost:3000", 
         "http://127.0.0.1:3000",
-        "http://localhost:8000"
+        "http://localhost:3001",
+        "http://127.0.0.1:3001",
     ]
     
     DATABASE_URL: str = "sqlite:///./content_aggregator.db"
@@ -28,6 +29,7 @@ class Settings(BaseSettings):
     REDDIT_CLIENT_ID: str = ""
     REDDIT_CLIENT_SECRET: str = ""
     NEWSAPI_KEY: str = ""
+    NEWSAPI_BASE_URL: str = "https://newsapi.org/v2"
     
     REDDIT_POST_LIMIT: int = 15
     REDDIT_SUBREDDITS: list = ["all", "programming", "technology", "news"]

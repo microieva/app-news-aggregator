@@ -4,13 +4,34 @@ from typing import List, Optional
 import asyncio
 
 from app.core.database import get_db
-from app.schemas.article import Article, ArticleList, ArticleUpdate, ArticleCreate, TaskStatusResponse
-from app.schemas.topic import Topic
+from app.schemas import ArticleBase, ArticleList, ArticleUpdate, ArticleCreate, TaskStatusResponse, ApiResponse
 from app.crud import article as article_crud
 from app.crud import topic as topic_crud
 from app.core.background_tasks import task_manager
 
 router = APIRouter()
+
+@router.get("/with-summaries", response_model=ApiResponse)
+async def read_articles_with_summaries(
+    db:AsyncSession = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100,
+    topic_name: Optional[str] = None
+):
+    articles = await article_crud.get_articles_with_summaries(db = db, skip=skip, limit=limit, topic_name=None)
+    total = await article_crud.get_articles_with_summaries_count(db, topic_name=None)
+
+    if articles:
+        api_response = ArticleList(
+            articles=articles,
+            total=total,
+            topic_name=topic_name 
+        )
+        return ApiResponse(
+            data=api_response
+        )
+    else:  
+        raise HTTPException(status_code=404, detail="No articles with summaries found")
 
 @router.get("/by-topic/{topic_id}", response_model=ArticleList)
 async def read_articles_by_topic(
@@ -124,14 +145,14 @@ async def create_article(
         await db.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to create article: {str(e)}")
 
-@router.get("/{article_id}", response_model=Article)
+@router.get("/{article_id}", response_model=ArticleBase)
 async def read_article(
     article_id: int, 
     include_task_status: bool = Query(False, description="Include background task status"),
     db: AsyncSession = Depends(get_db)
 ):
     """Get a specific article by ID"""
-    db_article = await article_crud.get_article(db, article_id=article_id)
+    db_article = await article_crud.get_article_by_id(db, article_id=article_id)
     if db_article is None:
         raise HTTPException(status_code=404, detail="Article not found")
     
@@ -144,7 +165,7 @@ async def read_article(
     
     return article_data
 
-@router.put("/{article_id}", response_model=Article)
+@router.put("/{article_id}", response_model=ArticleBase)
 async def update_article(
     article_id: int, 
     article_update: ArticleUpdate, 
