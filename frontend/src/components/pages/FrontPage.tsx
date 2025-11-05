@@ -1,64 +1,76 @@
-import topicsService from "@/services/topicsService";
-import { ApiError } from "@/types/api";
-import { Topic } from "@/types/topic";
-import Link from "next/link";
+import articlesService from "@/services/articlesService";
+import { ApiError, ArticlesData } from "@/types/api";
+import { Article } from "@/types/article";
 import { useEffect, useState } from "react";
+import { ArticleList } from "../ui/ArticleList";
+import { ArticleBlockTop } from "../ui/ArticleBlockTop";
+import { ArticleBlockSide } from "../ui/ArticleBlockSide";
+import { ArticleBlockBottom } from "../ui/ArticleBlockBottom";
+import { FrontPageFooter } from "../ui/FrontPageFooter";
+import { WeatherBlock } from "../ui/WeatherBlock";
 
 export default function FrontPage(){
-  const [error, setError] = useState<ApiError>();
-  const [topics, setTopics] = useState<Topic[]>();
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
+    const [articles, setArticles] = useState<Article[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<ApiError>();
+  
+    useEffect(() => {
       const fetchArticles = async () => {
         try {
           setLoading(true);
-          const data = await topicsService.getUsedTopics()
-          setTopics(data.topics || []);
+          const data: ArticlesData = await articlesService.getArticles()
+          setArticles(data.articles || []);
         } catch (error) {
-          setError(error as ApiError)
+          setError(error as ApiError);
         } finally {
           setLoading(false);
         }
       };
-
-      fetchArticles();
+  
+        fetchArticles();
     }, []);
-
-  if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">Loading topics...</div>
-      </div>
-    );
-  }
-
-   if (error) return <div>
-      <p>Error: {error.statusCode} - {error.message}</p>
-      <p><em>{error.detail}</em></p>
-    </div>;
-
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold mb-8 text-center">News Aggregator</h1>
-      
-      <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4">Browse Categories</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {topics?.map((topic: Topic) => {
-            const route = topic.name.replace(/ /g, '-');
-            return (
-              <Link
-                key={topic.name}
-                href={`/${route}`}
-                className="block p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 border border-gray-200"
-              >
-                <h3 className="text-xl font-semibold text-gray-800">{topic.name}</h3>
-                <p className="text-gray-600 mt-2">View articles about {topic.name}</p>
-              </Link>
-            );
-          })}
+  
+    if (loading) {
+      return (
+        <div className="wrapper">
+          <div className="text-center mx-auto">Loading top stories...</div>
         </div>
+      );
+    }
+    if (error) {
+      return (
+        <div className="mx-auto wrapper">
+          <div className="mt-40 m-auto text-center">
+            <p>Error: {error.statusCode} - {error.message}</p>
+            <p><em>{error.detail}</em></p>
+          </div>
+        </div>
+      );
+    }
+  
+  return (
+    <div className="grid-front-page">
+      <div className="grid-item-article-block-side" >
+        <ArticleBlockSide article={articles[2]}/>
+      </div>
+      <div className="grid-item-article-list bg-article-list">
+        <ArticleList /> 
+      </div>
+      <div className="grid-item-article-block-top">
+        <ArticleBlockTop article={articles.find(article => article.image_url !== article.url) || articles[0]}/>
+      </div>
+
+      <div className="grid-item-article-block-bottom">
+        <ArticleBlockBottom article={articles[3]}/>
+      </div>
+      <div className="grid-item-article-block">
+        <ArticleBlockTop article={articles[1]}/>
+      </div>
+      <div className="grid-item-foreground-block row-start-9">
+        <WeatherBlock/>
+      </div>
+      <div className="footer footer-front-page row-start-11 border-t-8">
+        <FrontPageFooter/>
       </div>
     </div>
   );

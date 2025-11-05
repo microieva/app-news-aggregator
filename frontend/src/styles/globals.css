@@ -1,74 +1,63 @@
-@import 'tailwindcss';
+@import 'variables.css';
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 
-@theme {
-  --color-background: hsl(0 0% 100%);
-  --color-foreground: hsl(0 0% 3.9%);
-  --color-card: hsl(0 0% 100%);
-  --color-card-foreground: hsl(0 0% 3.9%);
-  --color-popover: hsl(0 0% 100%);
-  --color-popover-foreground: hsl(0 0% 3.9%);
-  --color-primary: hsl(0 0% 9%);
-  --color-primary-foreground: hsl(0 0% 98%);
-  --color-secondary: hsl(0 0% 96.1%);
-  --color-secondary-foreground: hsl(0 0% 9%);
-  --color-muted: hsl(0 0% 96.1%);
-  --color-muted-foreground: hsl(0 0% 45.1%);
-  --color-accent: hsl(0 0% 96.1%);
-  --color-accent-foreground: hsl(0 0% 9%);
-  --color-destructive: hsl(0 84.2% 60.2%);
-  --color-destructive-foreground: hsl(0 0% 98%);
-  --color-border: hsl(0 0% 89.8%);
-  --color-input: hsl(0 0% 89.8%);
-  --color-ring: hsl(0 0% 3.9%);
-  --color-chart-1: hsl(12 76% 61%);
-  --color-chart-2: hsl(173 58% 39%);
-  --color-chart-3: hsl(197 37% 24%);
-  --color-chart-4: hsl(43 74% 66%);
-  --color-chart-5: hsl(27 87% 67%);
-  --radius: 0.6rem;
-}
 
-@media (prefers-color-scheme: dark) {
-  @theme {
-    --color-background: hsl(0 0% 3.9%);
-    --color-foreground: hsl(0 0% 98%);
-    --color-card: hsl(0 0% 3.9%);
-    --color-card-foreground: hsl(0 0% 98%);
-    --color-popover: hsl(0 0% 3.9%);
-    --color-popover-foreground: hsl(0 0% 98%);
-    --color-primary: hsl(0 0% 98%);
-    --color-primary-foreground: hsl(0 0% 9%);
-    --color-secondary: hsl(0 0% 14.9%);
-    --color-secondary-foreground: hsl(0 0% 98%);
-    --color-muted: hsl(0 0% 14.9%);
-    --color-muted-foreground: hsl(0 0% 63.9%);
-    --color-accent: hsl(0 0% 14.9%);
-    --color-accent-foreground: hsl(0 0% 98%);
-    --color-destructive: hsl(0 62.8% 30.6%);
-    --color-destructive-foreground: hsl(0 0% 98%);
-    --color-border: hsl(0 0% 14.9%);
-    --color-input: hsl(0 0% 14.9%);
-    --color-ring: hsl(0 0% 83.1%);
-    --color-chart-1: hsl(220 70% 50%);
-    --color-chart-2: hsl(160 60% 45%);
-    --color-chart-3: hsl(30 80% 55%);
-    --color-chart-4: hsl(280 65% 60%);
-    --color-chart-5: hsl(340 75% 55%);
+@layer components {
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
-}
+  .menu {
+    @apply p-0;
+  }
+  .menu li {
+    @apply hover:bg-[var(--np-background)] rounded-md;
+  }
+  .menu li:hover a{
+    @apply text-[var(--np-color-primary)] ;
+  }
 
-* {
-  border-color: hsl(var(--border));
-}
+  .tab-active, .tab-active:hover .tab-active:focus{
+    @apply [--tab-bg:var(--np-background)] text-[var(--np-color-primary)];
+  }
+  .tabs:hover, .tabs.tabs-lift:has(.tab-active){
+    @apply bg-[var(--np-color-primary)]; 
+  }
+  .tab:hover {
+    @apply text-[var(--np-color-primary)] !important; 
+  }
 
-body {
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
-}
+  .non-active-hover:hover .tabs-lift.tab-active{
+    @apply text-[var(--np-color-primary)] !important; 
+  }
 
+  .tabs.tabs-lift:has(.tab-active) .tab:not(.tab-active){
+    @apply text-[var(--np-background)!important]  hover:text-[var(--color-primary)];
+  }
+
+  .tabs.tabs-lift:has(.tab-active) .tab:not(.tab-active):hover {
+    @apply text-[var(--np-color-primary)] !important;
+  }
+  .tabs.tabs-lift:has(.tab-active):hover .tab.tab-active {
+    @apply text-[var(--np-color-primary)] !important;
+  }  
+
+
+}
 @layer base {
-  body {
-    font-family: var(--font-geist-sans), system-ui, sans-serif;
+  .font-primary {
+    font-family: var(--np-font-primary);
+  }
+  .font-secondary {
+    font-family: var(--np-font-secondary);
+  }
+  .text-extrasmall {
+    font-size: 0.7rem;
+  }
+  .np-grid {
+    @apply grid-rows-[repeat(auto-fit,minmax(15vh,auto))] min-h-[15vh];
   }
 }
 
@@ -76,4 +65,94 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+  .tabs-no-border .tab {
+    border-top:var(--np-background);
+    border-bottom: transparent;
+  }
+  .bg-article-list {
+    @apply bg-[var(--np-background)] hover:bg-[var(--np-foreground)]
+  }
 }
+
+@layer layout {
+  .page {
+    @apply px-4 py-8 min-h-screen bg-[var(--np-background)];
+  }
+  .grid-header-top {
+    @apply border-[var(--np-color-primary)];
+  }
+  .grid-header-bottom {
+    @apply grid-gap grid grid-cols-[10%,90%] grid-rows-1 bg-[var(--np-color-primary)];
+  }
+  .grid-article-page {
+    @apply grid grid-cols-10 np-grid bg-[var(--np-color-primary)] font-primary grid-gap;
+  }
+  .grid-item-article-page-block {
+    @apply min-h-screen col-span-8 row-span-5 col-start-1 row-start-1;
+  }
+  .grid-category-page {
+    @apply grid grid-cols-10 np-grid bg-[var(--np-color-primary)] font-primary grid-gap;
+  }
+  .grid-front-page {
+    @apply frontpage font-primary grid grid-cols-10 np-grid;
+  }
+  .grid-item-article-list {
+    @apply col-span-2 row-span-5 col-start-9 row-start-1 overflow-scroll
+  }
+  .grid-item-article-block-top {
+    @apply col-span-5 row-span-5 col-start-4 row-start-1;
+  }
+  .grid-item-article-block-bottom {
+    @apply col-span-4 row-span-3 row-start-6;
+  }
+  .grid-item-article-block {
+    @apply col-span-6 row-span-5 col-start-5 row-start-6;
+  }
+  .grid-item-foreground-block {
+    @apply col-span-4 row-span-2 bg-[var(--np-foreground)];
+  }
+  .grid-item-article-block-side {
+    @apply col-span-3 row-span-5;
+  }
+  .footer-front-page {
+    @apply col-span-10 row-span-2 text-center content-center bg-[var(--np-background)] py-4 rounded-br-2xl;
+  }
+}
+
+
+* {
+  border-color: var(--np-color-primary);
+}
+
+html, body {
+  background-color: var(--np-background);
+  color: var(--np-color-primary);
+}
+
+footer {
+  border-top: 1px solid var(--np-color-primary);
+}
+
+.grid-gap {
+  gap: 1px;
+}
+
+.frontpage {
+  background-color: var(--np-color-primary);
+  padding-top: 2px;
+  gap: 1px;
+}
+
+.frontpage .grid-row-top {
+  height: 75vh;
+}
+
+.frontpage .grid-row-bottom {
+  max-height: 25vh;
+}
+
+.header h1,
+.footer h1 {
+  font-weight: 900;
+}
+

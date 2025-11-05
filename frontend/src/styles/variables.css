@@ -1,0 +1,16 @@
+
+:root {
+  --np-background: #E4E1D5;
+  --np-foreground: #CAC8B9;
+  --np-color-primary: #353535;
+  --np-color-accent: #d83f08;
+
+  --np-font-primary: 'Ibarra Real Nova', serif;
+  --np-font-secondary: 'Helvetica', sans-serif;
+
+  --tab-active-bg: var(--np-background);
+  --tab-active-text: var(--np-color-primary);
+  --tab-inactive-bg: var(--np-color-primary);
+  --tab-inactive-text: var(--np-background);
+  --tab-hover-text: var(--np-color-primary);
+}

@@ -1,4 +1,5 @@
 import { ArticlesData } from '@/types/api';
+import { Article } from '@/types/article';
 import { ApiClient } from '@/utils/client';
 
 
@@ -19,13 +20,50 @@ class ArticlesService {
   }
 
   async getArticlesByTopicName(topic_name: string): Promise<ArticlesData> {
-    try {
-      const res =  await this.apiClient.get<ArticlesData>(`/articles/topic-name/${encodeURIComponent(topic_name)}`, );
-      console.log('GETTER: ', res)
-      return res;
-    } catch (error) {
-      console.error(`Error fetching topic ${name}:`, error);
-      throw error;
+    const articles = localStorage.getItem(`articles_${topic_name}`) || undefined;
+    if (articles) {
+      return { articles: JSON.parse(articles) , total: JSON.parse(articles).length };
+    } else {
+      try {
+        const data =  await this.apiClient.get<ArticlesData>(`/articles/topic-name/${encodeURIComponent(topic_name)}`, );
+        localStorage.setItem(`articles_${topic_name}`, JSON.stringify(data.articles));
+        return data;
+      } catch (error) {
+        console.error(`Error fetching topic ${name}:`, error);
+        throw error;
+      }
+    }
+  }
+
+  async getFrontPageArticles(): Promise<ArticlesData> {
+    const articles = localStorage.getItem('frontPageArticles') || undefined;
+    if (articles) {
+      return { articles: JSON.parse(articles) , total: JSON.parse(articles).length };
+    } else {
+      try {
+        const data = await this.apiClient.get<ArticlesData>('/articles/front-page');
+        localStorage.setItem('frontPageArticles', JSON.stringify(data.articles)); 
+        return data;
+      } catch (error) {
+        console.error('Error fetching front page articles:', error);
+        throw error;
+      }
+    }
+  }
+
+  async getArticleById(id: string): Promise<Article> {
+    const article = localStorage.getItem(`article_${id}`) || undefined;
+    if (article) {
+      return JSON.parse(article);
+    } else {
+      try {
+        const data = await this.apiClient.get<Article>(`/articles/${id}`);
+        localStorage.setItem(`article_${id}`, JSON.stringify(data));
+        return data;
+      } catch (error) {
+        console.error(`Error fetching article ${id}:`, error);
+        throw error;
+      }
     }
   }
 
@@ -38,14 +76,7 @@ class ArticlesService {
   //   }
   // }
 
-  // async getArticleById(id: string): Promise<{ data: Article }> {
-  //   try {
-  //     return await this.apiClient.get<{ data: Article }>(`/topics/${id}`);
-  //   } catch (error) {
-  //     console.error(`Error fetching topic ${id}:`, error);
-  //     throw error;
-  //   }
-  // }
+ 
 
   // async getArticleByName(name: string): Promise<{ data: Article }> {
   //   try {
