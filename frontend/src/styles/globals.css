@@ -82,7 +82,7 @@
     @apply border-[var(--np-color-primary)];
   }
   .grid-header-bottom {
-    @apply grid-gap grid grid-cols-[10%,90%] grid-rows-1 bg-[var(--np-color-primary)];
+    @apply grid-gap grid grid-cols-[12%,88%] grid-rows-1 bg-[var(--np-color-primary)];
   }
   .grid-article-page {
     @apply grid grid-cols-10 np-grid bg-[var(--np-color-primary)] font-primary grid-gap;

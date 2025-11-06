@@ -13,10 +13,11 @@ async def read_used_topics(
     db:AsyncSession = Depends(get_db),
     skip: int = Query(0, ge=0, description="Number of topics to skip"),
     limit: int = Query(100, ge=1, le=1000, description="Number of topics to return"),
+    source: Optional[str] = None
 ):
     """Get used topics with pagination"""
-    topics = await topic_crud.get_used_topics(db, skip=skip, limit=limit)
-    total = await topic_crud.get_used_topics_count(db)
+    topics = await topic_crud.get_used_topics(db, source=source, skip=skip, limit=limit)
+    total = await topic_crud.get_used_topics_count(db, source=source)
 
     if topics:
         api_response = TopicList(

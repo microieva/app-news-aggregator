@@ -1,4 +1,4 @@
-import { ArticlesData } from '@/types/api';
+import { ArticlesData, SourcesData } from '@/types/api';
 import { Article } from '@/types/article';
 import { ApiClient } from '@/utils/client';
 
@@ -10,7 +10,7 @@ class ArticlesService {
     this.apiClient = new ApiClient(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001/api');
   }
 
-  async getArticles(skip: number = 0, limit: number = 100): Promise<ArticlesData> {
+  async getArticles(source?: string, skip: number = 0, limit: number = 100): Promise<ArticlesData> {
     try {
       return await this.apiClient.get<ArticlesData>('/articles/with-summaries');
     } catch (error) {
@@ -19,51 +19,42 @@ class ArticlesService {
     }
   }
 
-  async getArticlesByTopicName(topic_name: string): Promise<ArticlesData> {
-    const articles = localStorage.getItem(`articles_${topic_name}`) || undefined;
-    if (articles) {
-      return { articles: JSON.parse(articles) , total: JSON.parse(articles).length };
-    } else {
-      try {
-        const data =  await this.apiClient.get<ArticlesData>(`/articles/topic-name/${encodeURIComponent(topic_name)}`, );
-        localStorage.setItem(`articles_${topic_name}`, JSON.stringify(data.articles));
-        return data;
-      } catch (error) {
-        console.error(`Error fetching topic ${name}:`, error);
-        throw error;
-      }
+  async getArticlesByTopicName({topic, source}:{source:string | undefined, topic:string}): Promise<ArticlesData> {
+    try {
+      const config = source ? { params: { source } } : undefined;
+      return await this.apiClient.get<ArticlesData>(`/articles/topic-name/${encodeURIComponent(topic)}`, config);
+    } catch (error) {
+      console.error('Error fetching articles:', error);
+      throw error;
     }
   }
 
-  async getFrontPageArticles(): Promise<ArticlesData> {
-    const articles = localStorage.getItem('frontPageArticles') || undefined;
-    if (articles) {
-      return { articles: JSON.parse(articles) , total: JSON.parse(articles).length };
-    } else {
-      try {
-        const data = await this.apiClient.get<ArticlesData>('/articles/front-page');
-        localStorage.setItem('frontPageArticles', JSON.stringify(data.articles)); 
-        return data;
-      } catch (error) {
-        console.error('Error fetching front page articles:', error);
-        throw error;
-      }
+  async getFrontPageArticles(source?: string): Promise<ArticlesData> {
+    try {
+      const config = source ? { params: { source } } : undefined;
+      return await this.apiClient.get<ArticlesData>('/articles/with-summaries', config);
+    } catch (error) {
+      console.error('Error fetching articles:', error);
+      throw error;
     }
   }
 
   async getArticleById(id: string): Promise<Article> {
-    const article = localStorage.getItem(`article_${id}`) || undefined;
-    if (article) {
-      return JSON.parse(article);
-    } else {
-      try {
-        const data = await this.apiClient.get<Article>(`/articles/${id}`);
-        localStorage.setItem(`article_${id}`, JSON.stringify(data));
-        return data;
-      } catch (error) {
-        console.error(`Error fetching article ${id}:`, error);
-        throw error;
-      }
+    try {
+      const data = await this.apiClient.get<Article>(`/articles/${id}`);
+      return data;
+    } catch (error) {
+      console.error(`Error fetching article ${id}:`, error);
+      throw error;
+    }
+  }
+
+  async getUsedSources(): Promise<SourcesData> {
+    try {
+      return await this.apiClient.get<SourcesData>(`/articles/sources`);
+    } catch (error) {
+      console.error('Error fetching used sources:', error);
+      throw error;
     }
   }
 

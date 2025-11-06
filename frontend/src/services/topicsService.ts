@@ -17,19 +17,13 @@ class TopicsService {
     }
   }
 
-  async getUsedTopics(skip: number = 0, limit: number = 100): Promise<TopicsData> {
-    const topics = localStorage.getItem('usedTopics') || undefined;
-    if (topics) {
-      return { topics: JSON.parse(topics) , total: JSON.parse(topics).length };
-    } else {
-      try {
-        const data = await this.apiClient.get<TopicsData>(`/topics/used`);
-        localStorage.setItem('usedTopics', JSON.stringify(data.topics));
-        return data;
-      } catch (error) {
-        console.error('Error fetching used topics:', error);
-        throw error;
-      }
+  async getUsedTopics(source?: string, skip: number = 0, limit: number = 100 ): Promise<TopicsData> {
+    const config = source ? { params: { source } } : undefined;
+    try {
+      return await this.apiClient.get<TopicsData>(`/topics/used`, config);
+    } catch (error) {
+      console.error('Error fetching used topics:', error);
+      throw error;
     }
   }
 

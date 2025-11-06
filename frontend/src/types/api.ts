@@ -28,6 +28,11 @@ export interface ArticlesData {
   topic_name?: string;
 }
 
+export interface SourcesData {
+  sources:string[];
+  topic_name?: string;
+}
+
 export interface TopicsData {
   topics: Topic[];
   total: number;

@@ -8,8 +8,10 @@ import { ArticleBlockSide } from "../ui/ArticleBlockSide";
 import { ArticleBlockBottom } from "../ui/ArticleBlockBottom";
 import { FrontPageFooter } from "../ui/FrontPageFooter";
 import { WeatherBlock } from "../ui/WeatherBlock";
+import { usePage } from "@/contexts/PageContext";
 
 export default function FrontPage(){
+    const { source } = usePage();
     const [articles, setArticles] = useState<Article[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<ApiError>();
@@ -18,7 +20,7 @@ export default function FrontPage(){
       const fetchArticles = async () => {
         try {
           setLoading(true);
-          const data: ArticlesData = await articlesService.getArticles()
+          const data: ArticlesData = await articlesService.getFrontPageArticles(source || undefined)
           setArticles(data.articles || []);
         } catch (error) {
           setError(error as ApiError);
@@ -28,7 +30,7 @@ export default function FrontPage(){
       };
   
         fetchArticles();
-    }, []);
+    }, [source]);
   
     if (loading) {
       return (

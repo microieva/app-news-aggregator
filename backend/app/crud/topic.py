@@ -32,20 +32,36 @@ async def get_topic_id_by_name(name: str, db: AsyncSession) -> Optional[int]:
     topic_id = result.scalar_one_or_none()
     return topic_id
 
-async def get_used_topics(db: AsyncSession, skip: int = 0, limit: int = 100) -> List[Topic]:
+async def get_used_topics(
+    db: AsyncSession, 
+    skip: int = 0, 
+    limit: int = 100,
+    source: Optional[str] = None
+) -> List[Topic]:
+    """
+    Get topics that have articles, optionally filtered by source first.
+    """
+    # Build the base query to find distinct topic_ids from articles
     topic_ids_query = (
         select(distinct(Article.topic_id))
         .where(Article.topic_id.is_not(None))
-        .offset(skip)
-        .limit(limit)
     )
     
+    # Apply source filter FIRST if provided
+    if source:
+        topic_ids_query = topic_ids_query.where(Article.source == source)
+    
+    # Apply pagination to the topic IDs query
+    topic_ids_query = topic_ids_query.offset(skip).limit(limit)
+    
+    # Execute to get topic IDs
     topic_ids_result = await db.execute(topic_ids_query)
     topic_ids = topic_ids_result.scalars().all()
     
     if not topic_ids:
         return []
     
+    # Get the actual Topic objects
     topics_query = (
         select(Topic)
         .where(Topic.id.in_(topic_ids))
@@ -57,8 +73,14 @@ async def get_used_topics(db: AsyncSession, skip: int = 0, limit: int = 100) -> 
     
     return topics
 
-async def get_used_topics_count(db: AsyncSession) -> int:
-    query = select(func.count(Topic.id)).where(Article.topic_id.is_not(None))
+async def get_used_topics_count(db: AsyncSession, source: Optional[str] = None) -> int:
+    query = select(func.count(Topic.id))
+
+    if source:
+        query.where(Article.source == source)
+    
+    query.where(Article.topic_id.is_not(None))
+    
     result = await db.execute(query)
     return result.scalar_one()
 

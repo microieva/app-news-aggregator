@@ -16,10 +16,11 @@ async def read_articles_with_summaries(
     db:AsyncSession = Depends(get_db),
     skip: int = 0,
     limit: int = 100,
-    topic_name: Optional[str] = None
+    topic_name: Optional[str] = None,
+    source: Optional[str] = None
 ):
-    articles = await article_crud.get_articles_with_summaries(db = db, skip=skip, limit=limit, topic_name=None)
-    total = await article_crud.get_articles_with_summaries_count(db, topic_name=None)
+    articles = await article_crud.get_articles_with_summaries(db = db, skip=skip, limit=limit, topic_name=topic_name, source=source)
+    total = await article_crud.get_articles_with_summaries_count(db, topic_name=topic_name, source=source)
 
     if articles:
         api_response = ArticleList(
@@ -42,10 +43,11 @@ async def read_articles_by_topic(
     sort_by: str = Query("published_at", description="Sort by field"),
     sort_order: str = Query("desc", description="Sort order (asc/desc)"),
     include_summary: bool = Query(False, description="Include summary status for each article"),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    source: Optional[str] = None
 ):
     """Get articles by topic name with sorting and pagination"""
-    #const route = category.replace(/ /g, '-');
+
     name = topic_name.replace('-', ' ')
     valid_sort_fields = ["published_at", "created_at", "title"]
     if sort_by not in valid_sort_fields:
@@ -66,10 +68,11 @@ async def read_articles_by_topic(
         skip=skip, 
         limit=limit,
         sort_by=sort_by,
-        sort_order=sort_order
+        sort_order=sort_order,
+        source=source
     )
     
-    total = await article_crud.get_articles_with_summaries_count(db, topic_name=name)
+    total = await article_crud.get_articles_with_summaries_count(db, topic_name=name, source=source)
     
     # enhanced_articles = []
     # for article in articles:
@@ -98,6 +101,21 @@ async def read_articles_by_topic(
         )
     else:  
         raise HTTPException(status_code=404, detail="No articles found for topic {name}")
+    
+@router.get("/sources", response_model=ApiResponse)
+async def read_used_topics(
+    db:AsyncSession = Depends(get_db)
+):
+    """Get used topics with pagination"""
+    sources = await article_crud.get_used_sources(db)
+
+    if sources:
+        api_response = sources
+        return ApiResponse(
+            data=api_response
+        )
+    else:  
+        raise HTTPException(status_code=404, detail="No sources found")
 
 
 @router.get("/topic/{topic_id}", response_model=ApiResponse)

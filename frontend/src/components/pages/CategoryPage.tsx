@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
 import { ArticlesData } from '@/types/api';
 import articlesService from '@/services/articlesService';
 import { Article } from '@/types/article';
@@ -7,13 +6,12 @@ import { ArticleList } from '../ui/ArticleList';
 import { ArticleBlockSide } from '../ui/ArticleBlockSide';
 import { ArticleBlockTop } from '../ui/ArticleBlockTop';
 import { ArticleBlockBottom } from '../ui/ArticleBlockBottom';
+import { usePage } from '@/contexts/PageContext';
 
-interface CategoryPageProps {
-  category: string;
-}
 
-export default function CategoryPage({ category }: CategoryPageProps) {
-  const router = useRouter();
+export default function CategoryPage() {
+  const { source, topic, setSource, setTopic, setHomePage, clearFilters, hasActiveFilters } = usePage();
+
   const [articles, setArticles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -21,8 +19,8 @@ export default function CategoryPage({ category }: CategoryPageProps) {
     const fetchArticles = async () => {
       try {
         setLoading(true);
-        const route = category.replace(/ /g, '-');
-        const data: ArticlesData = await articlesService.getArticlesByTopicName(route)
+        const config = {topic: topic!.name, source:source || undefined}
+        const data: ArticlesData = await articlesService.getArticlesByTopicName(config)
         setArticles(data.articles || []);
       } catch (error) {
         console.error('Error fetching articles:', error);
@@ -31,10 +29,8 @@ export default function CategoryPage({ category }: CategoryPageProps) {
       }
     };
 
-    if (category) {
-      fetchArticles();
-    }
-  }, [category]);
+    fetchArticles();
+  }, [topic]);
 
   const CategoryPageGrid = ({ articles }: { articles: Article[] }) => {
     const pageArticles = articles.slice(0, 6);
@@ -67,7 +63,7 @@ export default function CategoryPage({ category }: CategoryPageProps) {
   if (loading) {
     return (
       <div className="mx-auto wrapper">
-        <div className="text-center mx-auto">Loading articles for {category}...</div>
+        <div className="text-center mx-auto">Loading articles for {topic?.name}...</div>
       </div>
     );
   }
@@ -79,7 +75,7 @@ export default function CategoryPage({ category }: CategoryPageProps) {
           <CategoryPageGrid articles={articles}/>
          : (
           <div className="text-center py-8">
-            <p className="text-gray-500">No articles found for {category}</p>
+            <p className="text-gray-500">No articles found for {topic?.name}</p>
           </div>
         )}
       </div>

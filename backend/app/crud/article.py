@@ -62,7 +62,8 @@ async def get_articles_with_summaries(
     db: AsyncSession, 
     skip: int = 0, 
     limit: int = 100,
-    topic_name: Optional[str] = None
+    topic_name: Optional[str] = None,
+    source: Optional[str] = None
 ):
 
     query = (
@@ -79,17 +80,23 @@ async def get_articles_with_summaries(
     
     if topic_name:
         query = query.join(Topic).where(Topic.name == topic_name)
+
+    if source:
+        query = query.where(Article.source == source)
     
     result = await db.execute(query)
     articles = result.scalars().all()
     
     return articles
 
-async def get_articles_with_summaries_count(db: AsyncSession, topic_name: Optional[str] = None):
+async def get_articles_with_summaries_count(db: AsyncSession, topic_name: Optional[str] = None, source: Optional[str] = None):
     query = select(func.count(Article.id)).where(Article.is_processed == True)
     
     if topic_name:
         query = query.join(Topic).where(Topic.name == topic_name)
+
+    if source:
+        query = query.where(Article.source == source)
     
     result = await db.execute(query)
     count = result.scalar()
@@ -102,10 +109,12 @@ async def get_articles_by_topic_name(
     skip: int = 0,
     limit: int = 50,
     sort_by: str = "published_at",
-    sort_order: str = "desc"
+    sort_order: str = "desc",
+    source: Optional[str] = None  
 ) -> List[Article]:
     """
     Get articles by topic name with sorting and pagination.
+    Checks for source first, then filters by topic name.
     """
     sort_column_mapping = {
         "published_at": Article.published_at,
@@ -120,6 +129,7 @@ async def get_articles_by_topic_name(
     else:
         order_by_clause = sort_column.asc()
     
+    # Start building the query
     query = (
         select(Article)
         .options(
@@ -127,17 +137,22 @@ async def get_articles_by_topic_name(
             selectinload(Article.topic)   
         )
         .join(Topic, Article.topic_id == Topic.id)
-        .where(Topic.name == topic_name)          
-        .order_by(order_by_clause)
-        .offset(skip)
-        .limit(limit)
     )
+    
+    # Apply source filter FIRST if provided
+    if source:
+        query = query.where(Article.source == source)
+    
+    # Then apply topic name filter
+    query = query.where(Topic.name == topic_name)
+    
+    # Apply sorting and pagination
+    query = query.order_by(order_by_clause).offset(skip).limit(limit)
     
     result = await db.execute(query)
     articles = result.scalars().all()
     
     return articles
-
 async def get_articles_by_source(
     db: AsyncSession, 
     source: str, 
@@ -351,3 +366,18 @@ async def search_articles(
     
     result = await db.execute(query)
     return result.scalars().all()
+
+async def get_used_sources(db: AsyncSession) -> List[str]:
+    query = (
+        select(Article.source)
+        .where(Article.is_processed)
+        .distinct() 
+    )
+    
+    result = await db.execute(query)
+    sources = result.scalars().all()
+    
+    if not sources:
+        return []
+    
+    return sources
