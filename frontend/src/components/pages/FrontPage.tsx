@@ -1,7 +1,4 @@
-import articlesService from "@/services/articlesService";
-import { ApiError, ArticlesData } from "@/types/api";
-import { Article } from "@/types/article";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { ArticleList } from "../ui/ArticleList";
 import { ArticleBlockTop } from "../ui/ArticleBlockTop";
 import { ArticleBlockSide } from "../ui/ArticleBlockSide";
@@ -9,27 +6,14 @@ import { ArticleBlockBottom } from "../ui/ArticleBlockBottom";
 import { FrontPageFooter } from "../ui/FrontPageFooter";
 import { WeatherBlock } from "../ui/WeatherBlock";
 import { usePage } from "@/contexts/PageContext";
+import { useArticles } from "@/contexts/ArticlesContext";
 
 export default function FrontPage(){
-    const { source } = usePage();
-    const [articles, setArticles] = useState<Article[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<ApiError>();
+  const {loading, error, articles, refreshArticles} = useArticles();
+  const { source } = usePage();
   
     useEffect(() => {
-      const fetchArticles = async () => {
-        try {
-          setLoading(true);
-          const data: ArticlesData = await articlesService.getFrontPageArticles(source || undefined)
-          setArticles(data.articles || []);
-        } catch (error) {
-          setError(error as ApiError);
-        } finally {
-          setLoading(false);
-        }
-      };
-  
-        fetchArticles();
+      if (source) refreshArticles({source, topic:null});
     }, [source]);
   
     if (loading) {
@@ -42,7 +26,7 @@ export default function FrontPage(){
     if (error) {
       return (
         <div className="mx-auto wrapper">
-          <div className="mt-40 m-auto text-center">
+          <div className="text-center h-full content-center">
             <p>Error: {error.statusCode} - {error.message}</p>
             <p><em>{error.detail}</em></p>
           </div>

@@ -59,6 +59,9 @@
   .np-grid {
     @apply grid-rows-[repeat(auto-fit,minmax(15vh,auto))] min-h-[15vh];
   }
+  .wrapper {
+    height: calc(100vh - 6rem);
+  }
 }
 
 @layer utilities {
@@ -91,7 +94,7 @@
     @apply min-h-screen col-span-8 row-span-5 col-start-1 row-start-1;
   }
   .grid-category-page {
-    @apply grid grid-cols-10 np-grid bg-[var(--np-color-primary)] font-primary grid-gap;
+    @apply grid grid-cols-10 np-grid bg-[var(--np-color-primary)] font-primary grid-gap min-h-[100vh];
   }
   .grid-front-page {
     @apply frontpage font-primary grid grid-cols-10 np-grid;
@@ -116,6 +119,10 @@
   }
   .footer-front-page {
     @apply col-span-10 row-span-2 text-center content-center bg-[var(--np-background)] py-4 rounded-br-2xl;
+  }
+
+  .category-page-flex {
+    @apply flex flex-row flex-wrap border-[var(--np-color-primary)];
   }
 }
 

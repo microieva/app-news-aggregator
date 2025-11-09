@@ -37,7 +37,6 @@ class GNewsAggregator(BaseAggregator):
                 }
                 transformed_articles.append(transformed)
                 
-            logger.info(f"GNews aggregator returned {len(transformed_articles)} articles for topic: {topic}")
             return transformed_articles
             
         except Exception as e:

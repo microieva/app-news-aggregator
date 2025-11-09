@@ -23,7 +23,6 @@ class Settings(BaseSettings):
     ]
     
     DATABASE_URL: str = "sqlite:///./content_aggregator.db"
-    
     HUGGINGFACE_API_KEY: str = ""
     GROQ_API_KEY: str = ""
     REDDIT_CLIENT_ID: str = ""
@@ -74,15 +73,27 @@ class Settings(BaseSettings):
     HUGGINGFACE_FALLBACK_MODELS: list = [
         "facebook/bart-large-cnn",
         "google/pegasus-xsum",
-        "mrm8488/bert-small2bert-small-finetuned-cnn_daily_mail-summarization"
+        "mrm8488/bert-small2bert-small-finetuned-cnn_daily_mail-summarization",
+        "Falconsai/medical_summarization",
+        "pszemraj/led-large-book-summary",
+        "lidiya/bart-large-xsum-samsum",
+        "sshleifer/distilbart-cnn-12-6",
+        "allenai/led-base-16384",    
+        "t5-small",                 
+        "t5-base",
+        "google/flan-t5-base",        # Instruction-tuned for better summaries
+        "microsoft/prophetnet-large-uncased-cnndm",
+        "Yale-LILY/brio-cnndm-uncased",
+        "potsawee/bart-large-samsum-chat-summary",
     ]
 
     GROQ_API_URL: str = "https://api.groq.com/openai/v1"
     GROQ_MODELS: list = [
             "llama-3.3-70b-versatile",   
             "llama-3.1-8b-instant",        
-            "mixtral-8x7b-32768",          
-            "gemma2-9b-it"         
+            "meta-llama/llama-4-maverick-17b-128e-instruct",
+            "meta-llama/llama-4-scout-17b-16e-instruct",
+            "qwen/qwen3-32b"
         ]
     GROQ_API_KEY: str = ""
 
@@ -102,11 +113,14 @@ class Settings(BaseSettings):
 
     TOPIC_KEYWORDS: dict = {
             "technology": {
-                "technology", "tech", "software", "hardware", "digital", "innovation", 
+                "technology", "tech", "software", "hardware", "digital", "innovation", "invention",
                 "gadget", "device", "computer", "internet", "web", "mobile", "app", 
                 "application", "software", "hardware", "electronics", "digital", 
-                "innovation", "startup", "silicon valley", "tech news", "IT", 
-                "information technology", "cloud", "saas", "paas", "iaas"
+                "startup", "silicon valley", "tech news", "IT", "internet connection", "starlink",
+                "satelite", ""
+                "information technology", "cloud", "saas", "paas", "iaas", "data center", "data centers",
+                "processor", "processors", "microchip", "chip", "gpu", "micro chip", "nanotechnology", "quantum computer",
+                "quatum computers", "quantum era"
             },
             "artificial intelligence": {
                 "ai", "artificial intelligence", "machine learning", "ml", "neural network", 
@@ -132,7 +146,8 @@ class Settings(BaseSettings):
                 "theory", "scientific method", "laboratory", "data", "analysis",
                 "scientific discovery", "breakthrough", "innovation", "academic",
                 "university", "institute", "nobel prize", "quantum", "genetics",
-                "evolution", "climate science", "environmental science"
+                "evolution", "climate science", "environmental science", "iss", "metheor",
+                "comet", "orbit"
             },
             "business": {
                 "business", "company", "enterprise", "market", "industry", "corporate", 
@@ -151,7 +166,8 @@ class Settings(BaseSettings):
                 "penetration testing", "pentest", "ethical hacking", "black hat",
                 "white hat", "gray hat", "ddos", "botnet", "trojan", "virus", "worm",
                 "spyware", "adware", "two-factor authentication", "2fa", "mfa",
-                "vpn", "proxy", "tor", "dark web", "data protection", "gdpr", "compliance"
+                "vpn", "proxy", "tor", "dark web", "data protection", "gdpr", "compliance",
+                "hacker", "hacked", "cyber attack", "data leak", "data access", "security breach"
             },
             "palestine": {
                 "palestine", "palestinian", "gaza", "west bank", "israel", "occupation",
@@ -172,16 +188,27 @@ class Settings(BaseSettings):
                 "liberal", "conservative", "progressive", "socialist", "capitalist",
                 "national", "international", "geopolitics", "summit", "treaty",
                 "alliance", "united nations", "un", "eu", "nato", "sanction", "embargo"
+                "tarrif", "convention", "agreement", "bilateral", "constitution", "human rights",
+                "amendment", "immigration", "political crisis", "crisis", "ICE", "law enforcement",
+                "court","judge", "law", "unconstitutional","constitutional" , "congressional",
+                "jurry", "undocumented", "free speech", "freedom of speech", "mayor",
+                "MP", "european union", "coalition", "war", "oil", "gas", "sudan", "humanitarian",
+                "rsf", "invasion", "negotiation", "negotiations", "tribunal", "icj", "icc",
+                "vote", "elections", "voting", "voting rights", "impeach", "impeachement",
+                "court decision", "congresswoman", "nuclear", "trump", "putin", "peace deal",
+                "white house", "kremlin"
             },
             "environment": {
                 "environment", "environmental", "climate", "climate change", "global warming",
-                "sustainability", "renewable", "solar", "wind", "hydro", "geothermal",
+                "sustainability", "renewable", "solar", "wind", "hydro", "geothermal", "fossil fuels",
                 "fossil fuel", "coal", "oil", "gas", "carbon", "emission", "pollution",
                 "air quality", "water quality", "conservation", "biodiversity",
                 "ecosystem", "wildlife", "deforestation", "reforestation", "ocean",
                 "plastic", "recycling", "circular economy", "green", "eco-friendly",
                 "carbon footprint", "net zero", "paris agreement", "ipcc", "cop",
-                "extinction", "endangered", "habitat", "conservation", "natural resource"
+                "extinction", "endangered", "habitat", "conservation", "natural resource",
+                "species","biodiveristy", "polution", "environmental crisis", "clean energy",
+                "green energy"
             },
             "health": {
                 "health", "healthcare", "medical", "medicine", "doctor", "hospital",
@@ -240,7 +267,21 @@ class ColoredFormatter(logging.Formatter):
 
 def setup_colored_logging():
     logger = logging.getLogger()
-    logger.setLevel(logging.INFO)    
+    logger.setLevel(logging.INFO) 
+
+    sqlalchemy_loggers = [
+        'sqlalchemy.engine',
+        'sqlalchemy.pool',
+        'sqlalchemy.dialects',
+        'sqlalchemy.orm',
+        'sqlalchemy.dialects.sqlite',
+        'sqlalchemy.dialects.postgresql',
+        'sqlalchemy.dialects.mysql'
+    ]
+
+    for logger_name in sqlalchemy_loggers:
+        logging.getLogger(logger_name).setLevel(logging.WARNING)
+
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(logging.INFO)
     

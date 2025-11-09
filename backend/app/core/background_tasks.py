@@ -70,7 +70,6 @@ class BackgroundTaskManager:
         
         logger.info("✅ All background task processors stopped")
 
-    # AGGREGATION METHODS
 
     async def _process_aggregation_tasks(self):
         """Process aggregation tasks from the queue"""
@@ -132,8 +131,6 @@ class BackgroundTaskManager:
             })
             return {'success': False, 'error': str(e)}
 
-    # SUMMARIZATION METHODS
-
     async def _process_summarization_tasks(self, worker_id: int):
         """Process summarization tasks from the queue (multiple workers)"""
         logger.info(f"🔄 Summarization worker {worker_id} started")
@@ -167,33 +164,28 @@ class BackgroundTaskManager:
             
             async with self.async_session_factory() as db_session:
                 article = await article_crud.get_article_by_id(db_session, article_id)
-                if not article:
-                    raise ValueError(f"Article {article_id} not found")
+                if article:
+                    summary = await summary_pipeline.process_article(
+                        db=db_session,
+                        article=article,
+                        preferred_provider=task_data.get('preferred_provider'),
+                        quality_level=task_data.get('quality_level', 'standard')
+                    )
                 
-                summary = await summary_pipeline.process_article(
-                    db=db_session,
-                    article=article,
-                    preferred_provider=task_data.get('preferred_provider'),
-                    quality_level=task_data.get('quality_level', 'standard')
-                )
-                
-                if summary:
-                    self.task_status[task_id].update({
-                        'completed_at': datetime.now(),
-                        'status': 'completed',
-                        'summary_id': summary.id,
-                        'provider_used': summary.provider,
-                        'processing_time_ms': summary.processing_time_ms
-                    })
-                    
-                    logger.info(f"✅ Worker {worker_id} completed summarization: {task_id} for article {article_id}")
-                    return {'success': True, 'summary_id': summary.id}
-                else:
-                    raise ValueError("Summary pipeline returned None")
+                    if summary:
+                        self.task_status[task_id].update({
+                            'completed_at': datetime.now(),
+                            'status': 'completed',
+                            'summary_id': summary.id,
+                            'provider_used': summary.provider,
+                            'processing_time_ms': summary.processing_time_ms
+                        })
+                        
+                        return {'success': True, 'summary_id': summary.id}
                     
         except Exception as e:
-            logger.error(f"❌ Worker {worker_id} failed summarization: {task_id} - {e}")
-            logger.error(f"🔍 Stack trace: {traceback.format_exc()}")
+            logger.error(f"❌ Summarization failed (article id): ({task_id}) - {e}")
+
             self.task_status[task_id].update({
                 'completed_at': datetime.now(),
                 'status': 'failed',
@@ -279,7 +271,6 @@ class BackgroundTaskManager:
             logger.error(f"❌ Failed to submit article {article_id} for summarization: {e}")
             raise
     
-    # COMMON METHODS
 
     def _handle_task_completion(self, task_id: str):
         """Handle task completion - remove from active tasks"""

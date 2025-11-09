@@ -43,7 +43,6 @@ class ArticleCreate(BaseModel):
     original_search_topic: Optional[str] = None
 
 class ArticleUpdate(BaseModel):
-    #model_config = ConfigDict(protected_namespaces=())
     
     title: Optional[str] = None
     content: Optional[str] = None
@@ -70,7 +69,6 @@ class ArticleList(BaseModel):
 
 
 class ArticleProcessingStatus(BaseModel):
-    #model_config = ConfigDict(protected_namespaces=())
     
     article_id: int
     is_processed: bool
@@ -78,7 +76,6 @@ class ArticleProcessingStatus(BaseModel):
     has_summary: bool
 
 class BulkProcessingResult(BaseModel):
-    #model_config = ConfigDict(protected_namespaces=())
     
     total_articles: int
     processed_count: int

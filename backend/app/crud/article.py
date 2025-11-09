@@ -7,11 +7,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
-from app.core.config import setup_colored_logging
-
-
-logger = setup_colored_logging()
-
 async def create_article(db: AsyncSession, article: ArticleCreate) -> Article:
     """Create a new article - async version"""
 

@@ -54,17 +54,12 @@ export async function getStaticProps({ params }: { params: { category: string } 
     return {
       props: {
         category: params.category.replace(/-/g, ' '),
-      },
-      revalidate: 3600,
+      }
     };
   }
 }
 
-interface CategoryPageProps {
-  category: string;
-}
-
-export default function CategoryRoute({ category }: CategoryPageProps) {
+export default function CategoryRoute() {
   const router = useRouter();
 
   if (router.isFallback) {
@@ -75,5 +70,5 @@ export default function CategoryRoute({ category }: CategoryPageProps) {
     );
   }
 
-  return <CategoryPage category={category} />;
+  return <CategoryPage />;
 }

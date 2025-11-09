@@ -9,10 +9,6 @@ from app.core.config import settings
 logger = setup_colored_logging()
 
 class HuggingFaceProvider(LLMProvider):
-    """
-    Hugging Face Inference API provider for text summarization.
-    Free tier with generous rate limits - perfect for development.
-    """
     
     def __init__(self):
         self.api_key = settings.HUGGINGFACE_API_KEY
@@ -20,7 +16,6 @@ class HuggingFaceProvider(LLMProvider):
         self.default_model = settings.HUGGINGFACE_DEFAULT_MODEL 
         self.fallback_models = settings.HUGGINGFACE_FALLBACK_MODELS
         
-        # Track usage metrics
         self.metrics = {
             "total_requests": 0,
             "successful_requests": 0,
@@ -50,17 +45,7 @@ class HuggingFaceProvider(LLMProvider):
         quality: SummaryQuality = SummaryQuality.STANDARD,
         max_retries: int = 3
     ) -> str:
-        """
-        Generate summary using Hugging Face Inference API.
-        
-        Args:
-            text: Text to summarize
-            quality: Desired summary quality level
-            max_retries: Maximum number of retry attempts
-            
-        Returns:
-            Generated summary text
-        """
+
         self.metrics["total_requests"] += 1
         
         try:
@@ -91,16 +76,7 @@ class HuggingFaceProvider(LLMProvider):
                 raise LLMError(f"Hugging Face API error: {str(e)}")
     
     async def _call_huggingface_api(self, text: str, model: str) -> str:
-        """
-        Call Hugging Face Inference API.
-        
-        Args:
-            text: Text to summarize
-            model: Model to use for summarization
-            
-        Returns:
-            Generated summary text
-        """
+
         payload = {
             "inputs": text,
             "parameters": {
@@ -199,10 +175,7 @@ class HuggingFaceProvider(LLMProvider):
         return not any(indicator in summary_lower for indicator in error_indicators)
     
     async def is_available(self) -> bool:
-        """
-        Check if Hugging Face API is available.
-        We'll consider it available if we have an API key.
-        """
+
         if not self.api_key:
             logger.warning("Hugging Face API key not configured")
             return False
@@ -249,7 +222,6 @@ class HuggingFaceProvider(LLMProvider):
         except:
             pass
 
-# Factory function to create and register the provider
 async def create_huggingface_provider():
     """Create and initialize Hugging Face provider"""
     provider = HuggingFaceProvider()

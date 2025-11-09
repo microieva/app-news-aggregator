@@ -82,7 +82,6 @@ class SummaryPipeline:
             logger.info(f"✅ Summary generated successfully. Length: {len(summary_text)} chars")
             
             # Step 4: Updating Summary object
-            logger.info(f"💾 Updating summary in the database...")
             summary = await self._update_summary_status(
                 db=db,
                 article_id=article.id,
@@ -94,7 +93,6 @@ class SummaryPipeline:
             )
             
             # Step 5: Mark article as processed
-            logger.info(f"🏷️ Marking article as processed...")
             await self._mark_article_processed(db, article.id)
             
             self.stats["successful_summaries"] += 1
@@ -111,7 +109,6 @@ class SummaryPipeline:
             processing_time_ms = int((time.time() - start_time) * 1000)
             self.stats["failed_summaries"] += 1
             logger.error(f"❌ Pipeline error processing article {article.id}: {e}")
-            logger.error(f"🔍 Stack trace: {traceback.format_exc()}")
             
             await self._mark_article_failed(db, article.id, str(e))
             return None
@@ -140,7 +137,6 @@ class SummaryPipeline:
             processing_time_ms: int
         ) -> Summary:
             """Update summary object in the database"""
-            logger.info(f"💾 Updating summary for article {article_id}...")
             
             try:
                 result = await db.execute(
@@ -187,7 +183,7 @@ class SummaryPipeline:
                 .values(is_processed=True, processing_error=None)
             )
             await db.commit()
-            logger.info(f"✅ Article {article_id} marked as processed")
+
         except Exception as e:
             logger.error(f"❌ Error marking article as processed: {e}")
             await db.rollback()
@@ -203,7 +199,7 @@ class SummaryPipeline:
                 .values(is_processed=False, processing_error=error_message)
             )
             await db.commit()
-            logger.info(f"✅ Article {article_id} marked as failed")
+
         except Exception as e:
             logger.error(f"❌ Error marking article as failed: {e}")
             await db.rollback()

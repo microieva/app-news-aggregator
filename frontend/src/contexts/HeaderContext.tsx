@@ -31,14 +31,9 @@ const fetchers = {
     const data: TopicsData = await topicsService.getUsedTopics();
     return data.topics;
   },
-  getTopicsBySource: async (source: string | null): Promise<Topic[]> => {
-    if (source) {
-      const data: TopicsData = await topicsService.getUsedTopics(source);
-      return data.topics;
-    } else {
-      const data: TopicsData = await topicsService.getUsedTopics();
-      return data.topics;
-    }
+  getTopicsBySource: async (source: string): Promise<Topic[]> => {
+    const data: TopicsData = await topicsService.getUsedTopics(source);
+    return data.topics;
   },
 };
 
@@ -85,7 +80,7 @@ export function HeaderProvider({
    const refreshTopicsWithSource = async (source: string | null) => {
     if (source) {
       const filteredTopics = await fetchers.getTopicsBySource(source);
-      mutateTopics(filteredTopics, false); // false = don't revalidate
+      mutateTopics(filteredTopics, false); // don't revalidate
     } else {
       mutateTopics();
     }

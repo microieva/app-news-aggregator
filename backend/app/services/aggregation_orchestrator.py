@@ -19,17 +19,7 @@ class AggregationOrchestrator:
             "rss": rss_aggregator
         }
     
-    async def aggregate_articles(self, topic: str, limit_per_source: int = 10) -> List[Dict]:
-        """
-        Aggregate articles from all sources for a given topic
-        
-        Args:
-            topic: Search topic
-            limit_per_source: Number of articles per source
-            
-        Returns:
-            Combined list of articles from all sources
-        """
+    async def aggregate_articles(self, topic: str, limit_per_source: int = 20) -> List[Dict]:
 
         tasks = []
         for source_name, aggregator in self.aggregators.items():

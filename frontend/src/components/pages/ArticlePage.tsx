@@ -7,6 +7,28 @@ import { useState, useEffect } from "react";
 import { ArticleBlockTop } from "../ui/ArticleBlockTop";
 import { ArticleList } from "../ui/ArticleList";
 
+ export const ArticlePageGrid = ({article}: { article:Article}) => {
+
+    return (
+      <>
+        <div className="grid-item-article-page-block">
+          <ArticleBlockTop article={article}/>
+        </div>
+        <div className="grid-item-article-list bg-article-list">
+          <ArticleList/>
+        </div>
+        <div className="col-span-2 row-span-1 col-start-9 row-start-5 bg-[var(--np-foreground)] border-t">
+          something
+          <p>more content</p>
+          <p>more content</p>
+          <p>more content</p>
+          <p>more content</p>
+          <p>more content</p>
+        </div>
+      </>
+    )
+  }
+
 export default function ArticlePage({ id }: ArticlePageProps) {
   const router = useRouter();
 
@@ -28,26 +50,7 @@ export default function ArticlePage({ id }: ArticlePageProps) {
       if (id) fetchArticle();
   }, [id]);
 
-  const ArticlePageGrid = ({article}: { article:Article}) => {
-    return (
-      <>
-        <div className="grid-item-article-page-block">
-          <ArticleBlockTop article={article}/>
-        </div>
-        <div className="grid-item-article-list bg-article-list">
-          <ArticleList/>
-        </div>
-        <div className="col-span-2 row-span-1 col-start-9 row-start-5 bg-[var(--np-foreground)] border-t">
-          something
-          <p>more content</p>
-          <p>more content</p>
-          <p>more content</p>
-          <p>more content</p>
-          <p>more content</p>
-        </div>
-      </>
-    )
-  }
+ 
 
   if (router.isFallback || loading) {
     return (

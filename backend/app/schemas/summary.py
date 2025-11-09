@@ -4,6 +4,8 @@ from pydantic import BaseModel, ConfigDict
 
 
 class SummaryBase(BaseModel):
+    model_config = ConfigDict(from_attributes = True)
+
     id: Optional[int] = None 
     article_id: int
     content: str
@@ -16,9 +18,6 @@ class SummaryBase(BaseModel):
     is_successful: bool
     status: str
     created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 class SummaryCreate(BaseModel):
@@ -38,6 +37,8 @@ class SummaryCreate(BaseModel):
 
 
 class SummaryUpdate(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+
     status: Optional[str] = None
     content: Optional[str] = None
     provider: Optional[str] = None
@@ -74,6 +75,8 @@ class SummarizeRequest(BaseModel):
 
 
 class SummarizeResponse(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+    
     success: bool
     summary_id: Optional[int] = None
     summary_content: Optional[str] = None

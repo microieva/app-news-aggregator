@@ -18,12 +18,7 @@ class GroqProvider(LLMProvider):
         self.api_key = settings.GROQ_API_KEY
         self.base_url = settings.GROQ_API_URL.rstrip('/')
         
-        # Set default models if not configured
-        self.available_models: List[str] = settings.GROQ_MODELS or [
-            "mixtral-8x7b-32768",
-            "llama3-70b-8192", 
-            "llama3-8b-8192"
-        ]
+        self.available_models: List[str] = settings.GROQ_MODELS 
         self.default_model = self.available_models[0]
         
         self.metrics = {
@@ -35,7 +30,7 @@ class GroqProvider(LLMProvider):
             "response_times": [] 
         }
         
-        self._client = None  # Lazy initialization
+        self._client = None 
         
     @property
     async def client(self) -> httpx.AsyncClient:
@@ -64,17 +59,7 @@ class GroqProvider(LLMProvider):
         quality: SummaryQuality = SummaryQuality.STANDARD,
         max_retries: int = 2
     ) -> str:
-        """
-        Generate summary using Groq's ultra-fast API.
-        
-        Args:
-            text: Text to summarize
-            quality: Desired summary quality level
-            max_retries: Maximum number of retry attempts
-            
-        Returns:
-            Generated summary text
-        """
+
         self.metrics["total_requests"] += 1
         
         try:
@@ -116,16 +101,7 @@ class GroqProvider(LLMProvider):
                 raise LLMError(f"Groq API error: {str(e)}")
     
     def _create_groq_prompt(self, text: str, quality: SummaryQuality) -> str:
-        """
-        Create optimized prompt for Groq models.
-        
-        Args:
-            text: Text to summarize
-            quality: Desired summary quality level
-            
-        Returns:
-            Formatted prompt string
-        """
+
         min_len, max_len = self._get_summary_length_range(quality)
         
         quality_instructions = {

@@ -1,36 +1,26 @@
-import { useEffect, useState } from 'react';
-import { ArticlesData } from '@/types/api';
-import articlesService from '@/services/articlesService';
+import { useEffect } from 'react';
 import { Article } from '@/types/article';
 import { ArticleList } from '../ui/ArticleList';
 import { ArticleBlockSide } from '../ui/ArticleBlockSide';
 import { ArticleBlockTop } from '../ui/ArticleBlockTop';
 import { ArticleBlockBottom } from '../ui/ArticleBlockBottom';
 import { usePage } from '@/contexts/PageContext';
+import { useArticles } from '@/contexts/ArticlesContext';
+import { ArticlePageGrid } from './ArticlePage';
 
 
 export default function CategoryPage() {
-  const { source, topic, setSource, setTopic, setHomePage, clearFilters, hasActiveFilters } = usePage();
-
-  const [articles, setArticles] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { source, topic } = usePage();
+  const {loading, error, articles, refreshArticles} = useArticles();
 
   useEffect(() => {
-    const fetchArticles = async () => {
-      try {
-        setLoading(true);
-        const config = {topic: topic!.name, source:source || undefined}
-        const data: ArticlesData = await articlesService.getArticlesByTopicName(config)
-        setArticles(data.articles || []);
-      } catch (error) {
-        console.error('Error fetching articles:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchArticles();
+    refreshArticles({topic:topic?.name || null, source:source});
   }, [topic]);
+
+  useEffect(() => {
+    refreshArticles({topic:topic?.name || null, source});
+  }, [source ]);
+
 
   const CategoryPageGrid = ({ articles }: { articles: Article[] }) => {
     const pageArticles = articles.slice(0, 6);
@@ -38,7 +28,7 @@ export default function CategoryPage() {
     return (
       <>
         <div className="grid-item-article-block-side" >
-          <ArticleBlockSide article={pageArticles[2]}/>
+          {pageArticles[2] && <ArticleBlockSide article={pageArticles[2]}/>}
         </div>
         <div className="grid-item-article-list bg-article-list">
           <ArticleList /> 
@@ -48,10 +38,10 @@ export default function CategoryPage() {
         </div>
   
         <div className="grid-item-article-block-bottom">
-          <ArticleBlockBottom article={pageArticles[3]}/>
+          {pageArticles[3] && <ArticleBlockBottom article={pageArticles[3]}/>}
         </div>
         <div className="grid-item-article-block">
-          <ArticleBlockTop article={pageArticles[1]}/>
+          {pageArticles[1] && <ArticleBlockTop article={pageArticles[1]}/>}
         </div>
         <div className="grid-item-foreground-block row-start-9 ">
           something ? instead of weather
@@ -67,17 +57,21 @@ export default function CategoryPage() {
       </div>
     );
   }
+  if (error) {
+      return (
+        <div className="mx-auto wrapper">
+          <div className="text-center h-full content-center">
+            <p>Error: {error.statusCode} - {error.message}</p>
+            <p><em>{error.detail}</em></p>
+          </div>
+        </div>
+      );
+    }
 
   return (
     <div className=" mx-auto bg-[var(--np-background)] min-h-screen">
-      <div className="grid-category-page">
-        {articles.length > 0 ? 
-          <CategoryPageGrid articles={articles}/>
-         : (
-          <div className="text-center py-8">
-            <p className="text-gray-500">No articles found for {topic?.name}</p>
-          </div>
-        )}
+      <div className="grid-category-page min-h-[calc(100vh - 10rem)]">
+        <CategoryPageGrid articles={articles}/>
       </div>
     </div>
   );

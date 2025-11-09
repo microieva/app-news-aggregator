@@ -43,10 +43,13 @@ class AggregationService:
                 articles = await aggregation_orchestrator.aggregate_articles(topic)
                 from app.core import task_manager
                 enhanced_articles = []
+
+
                 for article in articles:
+                    #if self._validate_article(article):
                     enhanced_article = await self._enhance_article_with_topic(article, topic)
                     enhanced_articles.append(enhanced_article)
-                
+
                 saved_ids = await self._save_articles_to_db(enhanced_articles)
                 if saved_ids:  
                     total_articles = len(saved_ids)  
@@ -90,6 +93,49 @@ class AggregationService:
             logger.warning(f"⚠️ Error enhancing article topic: {e}")
             article['primary_topic'] = search_topic
             return article
+        
+    def _validate_article(self, article: dict) -> bool:
+        
+        validation_checks = [
+            # (condition, field_name, failure_message)
+            (
+                article.get('author') and str(article.get('author')).strip(),
+                'author',
+                'missing or empty author'
+            ),
+            (
+                article.get('image_url') and 
+                str(article.get('image_url')).strip() and 
+                article.get('image_url') != article.get('url'),
+                'image_url',
+                'missing, empty, or same as article URL'
+            ),
+            (
+                article.get('title') and str(article.get('title')).strip(),
+                'title',
+                'missing or empty title'
+            ),
+            (
+                article.get('content') and 
+                len(str(article.get('content')).split()) >= 50,
+                'content',
+                f'missing or too short ({len(str(article.get("content") or "").split())} words, need 50+)'
+            )
+        ]
+        
+        failed_checks = []
+        
+        for condition, field, message in validation_checks:
+            if not condition:
+                failed_checks.append(field)
+                logger.info(f"Article validation failed for {field}: {message}")
+        
+        if failed_checks:
+            logger.info(f"Article validation failed. Total failed fields: {len(failed_checks)}")
+            return False
+        
+        logger.info("Article validation passed all checks")
+        return True
     
     async def _save_articles_to_db(self, articles: List[dict]) -> List[int]:
         """Save aggregated articles to the database, return new article IDs"""

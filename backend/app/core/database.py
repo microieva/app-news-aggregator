@@ -10,7 +10,7 @@ else:
 
 engine = create_async_engine(
     async_database_url,
-    echo=True,
+    echo=False,
     future=True
 )
 

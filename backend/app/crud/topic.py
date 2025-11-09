@@ -32,40 +32,124 @@ async def get_topic_id_by_name(name: str, db: AsyncSession) -> Optional[int]:
     topic_id = result.scalar_one_or_none()
     return topic_id
 
+# async def get_used_topics(
+#     db: AsyncSession, 
+#     skip: int = 0, 
+#     limit: int = 100,
+#     source: Optional[str] = None,
+#     min_articles: int = 3 
+# ) -> List[Topic]:
+#     """
+#     Get topics that have at least min_articles articles, optionally filtered by source.
+#     """
+    
+#     topic_counts_query = (
+#         select(
+#             Article.topic_id,
+#             func.count(Article.id).label('article_count')
+#         )
+#         .where(Article.topic_id.is_not(None))
+#         .group_by(Article.topic_id)
+#         .having(func.count(Article.id) >= min_articles) 
+#     )
+    
+#     if source:
+#         topic_counts_query = topic_counts_query.where(Article.source == source)
+    
+#     topic_counts_query = topic_counts_query.subquery()
+    
+#     topics_query = (
+#         select(Topic)
+#         .join(topic_counts_query, Topic.id == topic_counts_query.c.topic_id)
+#         .order_by(Topic.name)
+#         .offset(skip)
+#         .limit(limit)
+#     )
+    
+#     topics_result = await db.execute(topics_query)
+#     topics = topics_result.scalars().all()
+    
+#     return topics
+
 async def get_used_topics(
     db: AsyncSession, 
     skip: int = 0, 
     limit: int = 100,
-    source: Optional[str] = None
+    source: Optional[str] = None,
+    min_articles: int = 3 
 ) -> List[Topic]:
     """
-    Get topics that have articles, optionally filtered by source first.
+    Get topics that have at least min_articles articles, optionally filtered by source.
+    Also update articles with unpopular topics (less than min_articles) to 'other' topic.
     """
-    # Build the base query to find distinct topic_ids from articles
-    topic_ids_query = (
-        select(distinct(Article.topic_id))
+    from sqlalchemy import update
+    
+    # Step 1: Find the "other" topic (create if it doesn't exist)
+    other_topic_result = await db.execute(
+        select(Topic).where(Topic.name == "other")
+    )
+    other_topic = other_topic_result.scalar_one_or_none()
+    
+    if not other_topic:
+        # Create "other" topic if it doesn't exist
+        other_topic = Topic(name="other", description="Miscellaneous topics")
+        db.add(other_topic)
+        await db.flush()  # Flush to get the ID
+        await db.refresh(other_topic)
+    
+    # Step 2: Find topics with less than min_articles (unpopular topics)
+    unpopular_topics_query = (
+        select(
+            Article.topic_id,
+            func.count(Article.id).label('article_count')
+        )
         .where(Article.topic_id.is_not(None))
+        .group_by(Article.topic_id)
+        .having(func.count(Article.id) < min_articles)
     )
     
-    # Apply source filter FIRST if provided
     if source:
-        topic_ids_query = topic_ids_query.where(Article.source == source)
+        unpopular_topics_query = unpopular_topics_query.where(Article.source == source)
     
-    # Apply pagination to the topic IDs query
-    topic_ids_query = topic_ids_query.offset(skip).limit(limit)
+    unpopular_topics_result = await db.execute(unpopular_topics_query)
+    unpopular_topic_ids = [row[0] for row in unpopular_topics_result.all()]
     
-    # Execute to get topic IDs
-    topic_ids_result = await db.execute(topic_ids_query)
-    topic_ids = topic_ids_result.scalars().all()
+    # Step 3: Update articles with unpopular topics to "other" topic
+    if unpopular_topic_ids:
+        # Don't include the "other" topic itself in the update
+        unpopular_topic_ids_to_update = [tid for tid in unpopular_topic_ids if tid != other_topic.id]
+        
+        if unpopular_topic_ids_to_update:
+            update_stmt = (
+                update(Article)
+                .where(Article.topic_id.in_(unpopular_topic_ids_to_update))
+                .values(topic_id=other_topic.id)
+            )
+            await db.execute(update_stmt)
+            await db.commit()
     
-    if not topic_ids:
-        return []
+    # Step 4: Get popular topics (original logic)
+    topic_counts_query = (
+        select(
+            Article.topic_id,
+            func.count(Article.id).label('article_count')
+        )
+        .where(Article.topic_id.is_not(None))
+        .group_by(Article.topic_id)
+        .having(func.count(Article.id) >= min_articles) 
+    )
     
-    # Get the actual Topic objects
+    if source:
+        topic_counts_query = topic_counts_query.where(Article.source == source)
+    
+    topic_counts_query = topic_counts_query.subquery()
+    
     topics_query = (
         select(Topic)
-        .where(Topic.id.in_(topic_ids))
-        .order_by(Topic.name) 
+        .join(topic_counts_query, Topic.id == topic_counts_query.c.topic_id)
+        .order_by(Topic.name)
+        .offset(skip)
+        .limit(limit)
     )
     
     topics_result = await db.execute(topics_query)

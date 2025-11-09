@@ -6,17 +6,18 @@ import { Dropdown } from "./Dropdown";
 import { usePage } from "@/contexts/PageContext";
 import { useHeader } from "@/contexts/HeaderContext";
 import { useEffect } from "react";
+import { useArticles } from "@/contexts/ArticlesContext";
 
 export const Header = () => {
   
-  const { sources, topics, loading, error, refreshHeaderData, refreshTopicsWithSource } = useHeader();
-  const { source, topic, setSource, setTopic, setHomePage, clearFilters, hasActiveFilters } = usePage();
+  const { sources, topics, loading, error, refreshTopicsWithSource } = useHeader();
+  const { source, topic, setTopic, setHomePage } = usePage();
   const router = useRouter();
   const date = DateTime.now();
 
   useEffect(()=> {
     if (source) refreshTopicsWithSource(source);
-  }, [source])
+  }, [source ])
 
   const handlePageChange = (topic:Topic, route:string) => {
     setTopic(topic);
@@ -93,8 +94,10 @@ export const Header = () => {
             <div className="overflow-x-auto scrollbar-hide h-full">
               <div 
                 role="tablist" 
-                className='tabs tabs-lift tabs-lg flex whitespace-nowrap min-w-max space-x-1 tabs-no-border h-full transition-colors duration-300'
-                
+                className={clsx(
+                  'tabs tabs-lift tabs-lg flex whitespace-nowrap min-w-max space-x-1 tabs-no-border h-full transition-colors duration-300',
+                  {'text-[var(--np-color-primary)]':!topic}
+                )}
               >
                 {topics?.map((t: Topic, i) => {
                   const route = t.name.replace(/ /g, '-');

@@ -51,7 +51,7 @@ class LLMProviderManager:
             from datetime import datetime
             self._provider_metrics[provider_name]["last_used"] = datetime.now()
             
-            logger.info(f"Successfully generated summary using {provider_name}")
+            #logger.info(f"Successfully generated summary using {provider_name}")
             return summary
             
         except Exception as e:

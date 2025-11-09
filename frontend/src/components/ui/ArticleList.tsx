@@ -1,13 +1,11 @@
 import articlesService from "@/services/articlesService";
 import { ApiError, ArticlesData } from "@/types/api";
 import { Article } from "@/types/article";
-import { Topic } from "@/types/topic";
 import { formatDate } from "@/utils/utils";
 import { useState, useEffect } from "react";
 
 export const ArticleList = () => {
   const [articles, setArticles] = useState<Article[]>([]);
-  const [categories, setCategories] = useState<Topic[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<ApiError>();
     
@@ -15,12 +13,8 @@ export const ArticleList = () => {
     const fetchArticles = async () => {
       try {
         setLoading(true);
-        const data: ArticlesData = await articlesService.getArticles()
-        setCategories(data.articles?.map(article => article.topic).filter((value, index, self) => 
-          value && self.findIndex(t => t?.id === value.id) === index) as Topic[] || []);
-
+        const data: ArticlesData = await articlesService.getArticles();
         setArticles(data.articles || []);
-        const otherStories = data.articles?.slice(4) || [];
       } catch (error) {
         setError(error as ApiError);
       } finally {
@@ -63,7 +57,7 @@ export const ArticleList = () => {
   if (error) {
       return (
         <div className="mx-auto wrapper border-t-2">
-          <div className="mt-40 m-auto text-center">
+          <div className="text-center h-full content-center">
             <p>Error: {error.statusCode} - {error.message}</p>
             <p><em>{error.detail}</em></p>
           </div>
@@ -76,7 +70,9 @@ export const ArticleList = () => {
       <h1 className="border-b border-[var(--np-color-primary)] py-2 text-2xl font-bold mb-4">Other Top News</h1>
       {articles.map((article: Article, i:number) =>{ 
         return (
-          <ArticleListItem article={article} index={i+1}/>
+          <div key={i}>
+            <ArticleListItem article={article} index={i+1}/>
+          </div>
         )})
       }
     </div>
