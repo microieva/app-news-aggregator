@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { ApiError } from '@/types/api';
 
-export class ApiClient {
+class ApiClient {
   private client: AxiosInstance;
 
   constructor(baseURL: string = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001/api') {
@@ -49,30 +49,10 @@ export class ApiClient {
     );
   }
 
-  async get<AxiosResponse>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse> {
+  async get<AxiosResponse>(url: string, config?: AxiosRequestConfig): Promise<any> {
     const response = await this.client.get<AxiosResponse>(url, config);
-    return response.data;
+    return response;
   }
-
-  // async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-  //   const response = await this.client.post<ApiResponse<T>>(url, data, config);
-  //   return response.data;
-  // }
-
-  // async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-  //   const response = await this.client.put<ApiResponse<T>>(url, data, config);
-  //   return response.data;
-  // }
-
-  // async patch<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-  //   const response = await this.client.patch<ApiResponse<T>>(url, data, config);
-  //   return response.data;
-  // }
-
-  // async delete<T>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-  //   const response = await this.client.delete<ApiResponse<T>>(url, config);
-  //   return response.data;
-  // }
 }
 
-//export const apiClient = new ApiClient();
+export const apiClient = new ApiClient();

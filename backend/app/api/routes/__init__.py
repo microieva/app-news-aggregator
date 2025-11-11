@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.routes import health, root, test, topics, articles, summary
+from app.api.routes import health, root, test, topics, articles, summary, weather
 
 api_router = APIRouter()
 
@@ -9,3 +9,4 @@ api_router.include_router(test.router, prefix="/api", tags=["test"])
 api_router.include_router(topics.router, prefix="/api/topics", tags=["topics"])
 api_router.include_router(articles.router, prefix="/api/articles", tags=["articles"])
 api_router.include_router(summary.router, prefix="/api", tags=["summary"])
+api_router.include_router(weather.router, prefix="/api/weather", tags=["weather"])

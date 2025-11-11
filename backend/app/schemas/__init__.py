@@ -2,6 +2,7 @@ from .topic import TopicBase, TopicCreate, TopicUpdate, TopicWithArticles, Topic
 from .article import ArticleBase, ArticleCreate, ArticleUpdate, ArticleList, ArticleProcessingStatus, BulkProcessingResult, TaskStatusResponse, ArticleWithSummaryStatus
 from .summary import SummaryBase, SummaryCreate, SummaryUpdate, SummaryWithArticle, SummarizeRequest, SummarizeResponse, BackgroundSummarizeResponse
 from .api import ApiResponse
+from .weather import WeatherCondition, WeatherResponse, CurrentWeather, AirQuality, Location, WeeklyForecastResponse, ForecastDay, ForecastResponse, DailyForecast
 
 __all__ = [
     "TopicBase",
@@ -25,5 +26,14 @@ __all__ = [
     "SummarizeRequest",
     "SummarizeResponse",
     "BackgroundSummarizeResponse",
-    "ApiResponse"
+    "ApiResponse",
+    "WeatherCondition",
+    "WeatherResponse",
+    "CurrentWeather",
+    "AirQuality",
+    "Location",
+    "WeeklyForecastResponse",
+    "ForecastDay",
+    "ForecastResponse",
+    "DailyForecast"
 ]

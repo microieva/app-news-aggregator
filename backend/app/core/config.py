@@ -22,13 +22,14 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3001",
     ]
     
-    DATABASE_URL: str = "sqlite:///./content_aggregator.db"
+    DATABASE_URL: str = ""
     HUGGINGFACE_API_KEY: str = ""
     GROQ_API_KEY: str = ""
     REDDIT_CLIENT_ID: str = ""
     REDDIT_CLIENT_SECRET: str = ""
     NEWSAPI_KEY: str = ""
-    NEWSAPI_BASE_URL: str = "https://newsapi.org/v2"
+    WEATHER_API_KEY: str = ""
+    NEWSAPI_BASE_URL: str = ""
     
     REDDIT_POST_LIMIT: int = 15
     REDDIT_SUBREDDITS: list = ["all", "programming", "technology", "news"]
@@ -65,10 +66,10 @@ class Settings(BaseSettings):
     RSS_ARTICLE_LIMIT: int = 10
 
     GNEWS_API_KEY: str = ""
-    GNEWS_API_URL: str = "https://gnews.io/api/v4"
+    GNEWS_API_URL: str = ""
     GNEWS_ARTICLE_LIMIT: int = 10
 
-    HUGGINGFACE_BASE_URL: str = "https://api-inference.huggingface.co"
+    HUGGINGFACE_BASE_URL: str = ""
     HUGGINGFACE_DEFAULT_MODEL: str = "facebook/bart-large-cnn"
     HUGGINGFACE_FALLBACK_MODELS: list = [
         "facebook/bart-large-cnn",
@@ -87,7 +88,7 @@ class Settings(BaseSettings):
         "potsawee/bart-large-samsum-chat-summary",
     ]
 
-    GROQ_API_URL: str = "https://api.groq.com/openai/v1"
+    GROQ_API_URL: str = ""
     GROQ_MODELS: list = [
             "llama-3.3-70b-versatile",   
             "llama-3.1-8b-instant",        
@@ -221,6 +222,9 @@ class Settings(BaseSettings):
                 "telemedicine", "digital health", "wearable", "fitness tracker"
             }
         }
+    
+    WEATHER_API_KEY: str = ""
+    WEATHER_API_URL: str = ""
     
     class Config:
         env_file = ".env"

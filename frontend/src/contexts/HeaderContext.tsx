@@ -1,6 +1,6 @@
 import { createContext, useContext, ReactNode } from 'react';
 import useSWR from 'swr';
-import articlesService from '@/services/articlesService';
+import { articlesService } from '@/services/articlesService';
 import { topicsService } from '@/services/topicsService';
 import { ApiError, SourcesData, TopicsData } from '@/types/api';
 import { Topic } from '@/types/topic';

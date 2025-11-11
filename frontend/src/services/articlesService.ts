@@ -1,58 +1,56 @@
-import { ArticlesData, SourcesData } from '@/types/api';
+import { ApiResponse, ArticlesData, SourcesData } from '@/types/api';
 import { Article } from '@/types/article';
-import { ApiClient } from '@/utils/client';
+import { apiClient } from '@/utils/client';
 
-
-class ArticlesService {
-  private apiClient: ApiClient;
-
-  constructor() {
-    this.apiClient = new ApiClient(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001/api');
-  }
+export const articlesService = {
 
   async getArticles(source?: string, skip: number = 0, limit: number = 100): Promise<ArticlesData> {
     const config = source ? { params: { source } } : undefined;
     try {
-      return await this.apiClient.get<ArticlesData>('/articles/with-summaries', config);
+      const response =  await apiClient.get<ApiResponse<ArticlesData>>('/articles/with-summaries', config);
+      return response.data;
     } catch (error) {
       console.error('Error fetching topics:', error);
       throw error;
     }
-  }
+  },
 
   async getArticlesByTopicName(topic:string, source?:string): Promise<ArticlesData> {
     try {
       const config = source ? { params: { source } } : undefined;
-      return await this.apiClient.get<ArticlesData>(`/articles/topic-name/${encodeURIComponent(topic)}`, config);
+      const response =  await apiClient.get<ApiResponse<ArticlesData>>(`/articles/topic-name/${encodeURIComponent(topic)}`, config);
+      return response.data;
     } catch (error) {
       console.error('Error fetching articles:', error);
       throw error;
     }
-  }
+  },
 
   async getFrontPageArticles(source?: string): Promise<ArticlesData> {
     try {
       const config = source ? { params: { source } } : undefined;
-      return await this.apiClient.get<ArticlesData>('/articles/with-summaries', config);
+      const response =  await apiClient.get<ApiResponse<ArticlesData>>('/articles/with-summaries', config);
+      return response.data;
     } catch (error) {
       console.error('Error fetching articles:', error);
       throw error;
     }
-  }
+  },
 
   async getArticleById(id: string): Promise<Article> {
     try {
-      const data = await this.apiClient.get<Article>(`/articles/${id}`);
-      return data;
+      const response = await apiClient.get<ApiResponse<Article>>(`/articles/${id}`);
+      return response.data;
     } catch (error) {
       console.error(`Error fetching article ${id}:`, error);
       throw error;
     }
-  }
+  },
 
   async getUsedSources(): Promise<SourcesData> {
     try {
-      return await this.apiClient.get<SourcesData>(`/articles/sources`);
+      const repsonse =  await apiClient.get<ApiResponse<SourcesData>>(`/articles/sources`);
+      return repsonse.data;
     } catch (error) {
       console.error('Error fetching used sources:', error);
       throw error;
@@ -60,6 +58,3 @@ class ArticlesService {
   }
 }
 
-export const articlesService = new ArticlesService();
-
-export default articlesService;

@@ -19,6 +19,7 @@ from .topic_matcher import topic_matcher
 from .topic_initializer import topic_initializer
 from .aggregation_orchestrator import aggregation_orchestrator
 from .aggregation_service import aggregation_service
+from .weather_service import weather_service
 
 __all__ = [
   "BaseAggregator", 
@@ -39,5 +40,6 @@ __all__ = [
   "aggregation_orchestrator",
   "aggregation_service",
   "topic_initializer",
-  "topic_matcher"
+  "topic_matcher",
+  "weather_service"
 ]

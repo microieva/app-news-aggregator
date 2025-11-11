@@ -1,4 +1,4 @@
-import articlesService from "@/services/articlesService";
+import { articlesService } from "@/services/articlesService";
 import { Article } from "@/types/article";
 import { ArticlePageProps } from "@/types/pages";
 import { Link } from "lucide-react";
