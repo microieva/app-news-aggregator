@@ -7,10 +7,16 @@ import { FrontPageFooter } from "../ui/FrontPageFooter";
 import { WeatherBlock } from "../ui/WeatherBlock";
 import { usePage } from "@/contexts/PageContext";
 import { useArticles } from "@/contexts/ArticlesContext";
+import { SearchComponent } from "../ui/SearchComponent";
+import { AnimatePresence, motion } from "framer-motion";
 
 export default function FrontPage(){
-  const {loading, error, articles, refreshArticles} = useArticles();
+  const {loading, error, articles, refreshArticles, isSearching, searchQuery} = useArticles();
   const { source } = usePage();
+
+    useEffect(()=> {
+
+    })
   
     useEffect(() => {
       if (source) refreshArticles({source, topic:null});
@@ -35,29 +41,81 @@ export default function FrontPage(){
     }
   
   return (
-    <div className="grid-front-page">
-      <div className="grid-item-article-block-side" >
-        <ArticleBlockSide article={articles[2]}/>
-      </div>
-      <div className="grid-item-article-list bg-article-list">
-        <ArticleList /> 
-      </div>
-      <div className="grid-item-article-block-top">
-        <ArticleBlockTop article={articles.find(article => article.image_url !== article.url) || articles[0]}/>
-      </div>
-
-      <div className="grid-item-article-block-bottom">
-        <ArticleBlockBottom article={articles[3]}/>
-      </div>
-      <div className="grid-item-article-block">
-        <ArticleBlockTop article={articles[1]}/>
-      </div>
-      <div className="grid-item-foreground-block row-start-9">
-        <WeatherBlock/>
-      </div>
-      <div className="footer footer-front-page row-start-11 border-t-8">
-        <FrontPageFooter/>
-      </div>
-    </div>
-  );
+     <>
+      <AnimatePresence>
+      {(isSearching || searchQuery) && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={
+            isSearching 
+              ? { opacity: 1, height: 'auto', scale: 1 } 
+              : { opacity: 0.8, height: 'auto', scale: 0.98 }
+          }
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.5, ease: 'easeInOut' }}
+          className="overflow-hidden"
+        >
+          <SearchComponent/> 
+        </motion.div>
+      )}
+    </AnimatePresence>
+      {isSearching ? 
+         <AnimatePresence>
+          <motion.div
+          initial={{ opacity: 0}}
+          animate={{ opacity: 1}}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5, ease: 'easeInOut' }}
+          className="overflow-hidden"
+        >
+        <div className="grid-search-view">
+          <div className="grid-item-article-list bg-article-list">
+            <ArticleList /> 
+          </div>
+          <div className="grid-item-foreground-block row-start-9">
+            <WeatherBlock/>
+          </div>
+          <div className="footer footer-front-page row-start-11 border-t-8">
+            <FrontPageFooter/>
+          </div>
+        </div>
+        </motion.div> 
+        </AnimatePresence>
+      : 
+       <AnimatePresence>
+          <motion.div
+          initial={{ opacity: 0}}
+          animate={{ opacity: 1}}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5, ease: 'easeInOut' }}
+          className="overflow-hidden"
+        >
+       <div className="grid-front-page">
+         <div className="grid-item-article-block-side" >
+           <ArticleBlockSide article={articles[2]}/>
+         </div>
+         <div className="grid-item-article-list bg-article-list">
+           <ArticleList /> 
+         </div>
+         <div className="grid-item-article-block-top">
+           <ArticleBlockTop article={articles.find(article => article.image_url !== article.url) || articles[0]}/>
+         </div>
+         <div className="grid-item-article-block-bottom">
+           <ArticleBlockBottom article={articles[3]}/>
+         </div>
+         <div className="grid-item-article-block">
+           <ArticleBlockTop article={articles[1]}/>
+         </div>
+         <div className="grid-item-foreground-block row-start-9">
+           <WeatherBlock/>
+         </div>
+         <div className="footer footer-front-page row-start-11 border-t-8">
+           <FrontPageFooter/>
+         </div>
+       </div>
+       </motion.div>
+       </AnimatePresence>
+      }
+      </>
+    )
 }

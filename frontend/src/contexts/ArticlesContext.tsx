@@ -8,7 +8,11 @@ interface ArticlesContextType {
   articles: Article[];
   loading: boolean;
   error: ApiError | null;
+  isSearching: boolean;
+  searchQuery: string;
   refreshArticles: (args: { source: string | null; topic: string | null }) => Promise<void>;
+  performSearch: (query: string) => Promise<void>;
+  clearSearch: () => void;
 }
 
 const ArticlesContext = createContext<ArticlesContextType | undefined>(undefined);
@@ -35,6 +39,13 @@ const fetchers = {
     
     return data.articles;
   },
+
+  searchArticles: async (query: string): Promise<Article[]> => {
+    // const data: ArticlesData = await articlesService.searchArticles(query);
+    // return data.articles;
+    console.log('will call articles with ', query)
+    return []
+  },
 };
 
 export function ArticlesProvider({ 
@@ -42,6 +53,8 @@ export function ArticlesProvider({
   initialArticles = [], 
 }: ArticlesProviderProps) {
   const [manualError, setManualError] = useState<ApiError | null>(null);
+  const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   const {
     data: articlesData,
@@ -60,7 +73,9 @@ export function ArticlesProvider({
   );
 
   const refreshArticles = async ({ source, topic }: { source: string | null; topic: string | null }) => {
-    setManualError(null); 
+    setManualError(null);
+    setIsSearching(false);
+    setSearchQuery('');
     
     try {
       if (source || topic) {
@@ -82,13 +97,51 @@ export function ArticlesProvider({
     }
   };
 
+  const performSearch = async (query: string) => {
+    if (!query.trim()) {
+      clearSearch();
+      return;
+    }
+
+    setManualError(null);
+    setIsSearching(true);
+    setSearchQuery(query.trim());
+
+    try {
+      const searchResults = await fetchers.searchArticles(query.trim());
+      mutateArticles(searchResults, false);
+    } catch (error) {
+      const apiError = error as ApiError;
+      
+      if (apiError.statusCode === 404) {
+        console.warn(`No articles found for search: "${query}"`);
+        mutateArticles([], false);
+        setManualError(apiError);
+      } else {
+        console.error('Search failed:', error);
+        setManualError(apiError);
+      }
+    }
+  };
+
+  const clearSearch = () => {
+    setIsSearching(false);
+    setSearchQuery('');
+    setManualError(null);
+    mutateArticles(); // Revalidate to get original articles
+  };
+
   const error = manualError || swrError;
 
   const value: ArticlesContextType = {
     articles: articlesData || [],
     loading: !articlesData && !error,
     error: error || null,
+    isSearching,
+    searchQuery,
     refreshArticles,
+    performSearch,
+    clearSearch,
   };
 
   return (

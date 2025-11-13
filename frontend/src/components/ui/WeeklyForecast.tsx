@@ -12,15 +12,15 @@ export const WeeklyForecast = () => {
 
   return (
       <div className='pl-4'>
-        <h3 className="text-lg mb-2">7-Day Forecast</h3>
-        <div className="space-y-1">
+        <h3 className="text-lg mb-4 border-b">7-Day Forecast</h3>
+        <div>
           {forecast?.forecast?.map((day:DailyForecast, index:any) => (
-              <div key={index} className="grid grid-cols-[20%_80%] grid-rows-[1rem]">
+              <div key={index} className="grid grid-cols-[20%_80%] grid-rows-[0.8rem]">
                 <div className="text-sm">
                   <p className="text-gray-600">{index === 0 ? 'Today' : formatDate(day.date)}</p>
                   <p className="text-gray-600 text-xs">{getWeekday(day.date)}</p>
                 </div>
-                <div className="pl-4 font-bold">
+                <div className="pl-4 font-bold text-sm">
                   {day.condition.text}
                 </div>
                 <div className="divider w-full before:bg-gray-600 after:bg-gray-600"></div>

@@ -55,6 +55,15 @@ export const articlesService = {
       console.error('Error fetching used sources:', error);
       throw error;
     }
+  },
+
+  async searchArticles(query:string): Promise<any>{
+    try {
+
+    } catch (error) {
+      console.error('Error fetching used sources:', error);
+      throw error;
+    }
   }
 }
 
