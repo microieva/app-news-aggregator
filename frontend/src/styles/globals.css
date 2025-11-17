@@ -20,7 +20,8 @@
 
 
   .tab-active, .tab-active:hover .tab-active:focus {
-    @apply [--tab-bg:var(--np-background)] text-[var(--np-color-primary)];
+    @apply [--tab-bg:var(--np-background)] text-[var(--np-color-primary)]; 
+    border: var(--np-background); 
   }
 
   .tabs.tabs-lift:has(.tab-active) .tab:not(.tab-active){
@@ -36,42 +37,12 @@
   .tabs.tabs-lift:has(.tab-active):hover .tab.tab-active {
     @apply text-[var(--np-color-primary)] !important;
   } 
-
-
-  /* .tab:hover {
-     @apply text-[var(--np-color-primary)!important];
-  } */
-  /* 
-   .tab-active, .tab-active:hover .tab-active:focus {
-    @apply [--tab-bg:var(--np-background)] text-[var(--np-color-primary)];
+  .tab-lifted.tab-active {
+    @apply [--tab-border-color:var(--np-color-primary)] ;
   }
-  .tabs:hover, .tabs.tabs-lift:has(.tab-active){
-    @apply bg-[var(--np-color-primary)]; 
+  .tab-lifted:not(.tab-active):hover {
+    @apply z-50;
   }
-
-  .no-active-tab.tabs.tabs-lift:hover {
-    color: var(--np-background) !important;
-  }
-
-
-  .tab:hover {
-    @apply text-[var(--np-color-primary)] !important; 
-  }
-
-  .non-active-hover:hover .tabs-lift.tab-active{
-    @apply text-[var(--np-color-primary)] !important; 
-  }
-
-  .tabs.tabs-lift:has(.tab-active) .tab:not(.tab-active){
-    @apply text-[var(--np-background)!important]  hover:text-[var(--color-primary)];
-  }
-
-  .tabs.tabs-lift:has(.tab-active) .tab:not(.tab-active):hover {
-    @apply text-[var(--np-color-primary)] !important;
-  }
-  .tabs.tabs-lift:has(.tab-active):hover .tab.tab-active {
-    @apply text-[var(--np-color-primary)] !important;
-  }   */
   .label-text, .label-text-alt{
     @apply text-[var(--np-color-primary)];
   }
@@ -100,7 +71,6 @@
     text-wrap: balance;
   }
   .tabs-no-border .tab {
-    border: var(--np-background);
     border-bottom: transparent;
   }
   .bg-article-list {
@@ -128,7 +98,7 @@
     @apply min-h-screen col-span-8 row-span-5 col-start-1 row-start-1;
   }
   .grid-category-page {
-    @apply grid grid-cols-10 np-grid bg-[var(--np-color-primary)] font-primary grid-gap min-h-[100vh];
+    @apply grid grid-cols-10 np-grid bg-[var(--np-color-primary)] font-primary grid-gap min-h-[100vh] pt-[2px];
   }
   .grid-front-page {
     @apply frontpage font-primary grid grid-cols-10 np-grid;

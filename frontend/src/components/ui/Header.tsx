@@ -130,40 +130,10 @@ export const Header = () => {
           </div>
           <div className="row-start-1 col-start-2 rounded-bl-md rounded-tr-md bg-[var(--np-background)] overflow-hidden">
             <div className="group/tablist relative overflow-x-auto scrollbar-hide h-full">
-                {/* <div 
-                  role="tablist" 
-                  className={clsx(
-                    'tabs tabs-lift tabs-lg flex whitespace-nowrap min-w-max space-x-1 tabs-no-border h-full transition-colors duration-300',
-                    {'text-[var(--np-color-primary)]':!topic}
-                  )}
-                >
-                  {topics?.map((t: Topic, i) => {
-                    const route = t.name.replace(/ /g, '-');
-                    const isActive = router.asPath.endsWith(`/${route}/`);
-                    return (
-                      <button 
-                        key={t.id}
-                        role="tab" 
-                        onClick={() => handlePageChange(t, route)}
-                        className={clsx(
-                          'tab tab-lifted h-full flex-shrink-0 transition-colors duration-200 focus:tab-active hover:tab-active',
-                          {
-                            'tab-active ': isActive,
-                            'non-active-hover':!isActive,
-                            'text-[var(--np-color-primary)]': !topic // initial state
-                          }
-                        )}
-                      >
-                        {t.name}
-                      </button>  
-                    );
-                  })}
-                </div> */}
-
                 <div 
                   role="tablist" 
                   className={clsx(
-                    'tabs tabs-lift tabs-lg flex whitespace-nowrap min-w-max space-x-[1px] tabs-no-border h-full transition-colors duration-300 hover:tab-active',
+                    'tabs tabs-lift tabs-lg flex whitespace-nowrap min-w-max space-x-[1px] tabs-no-border h-full transition-colors duration-200 hover:tab-active',
                     {
                       'text-[var(--np-color-primary)] ': !topic,
                       'group-hover/tablist:bg-[var(--np-color-primary)] group-hover/tablist:text-[var(--np-background)]': true
@@ -179,7 +149,7 @@ export const Header = () => {
                         role="tab" 
                         onClick={() => handlePageChange(t, route)}
                         className={clsx(
-                          'tab tab-lifted h-full flex-shrink-0 transition-colors duration-200 hover:tab-active focus:tab-active',
+                          'tab tab-lifted h-full flex-shrink-0 transition-colors hover:tab-active focus:tab-active',
                           {
                             'tab-active bg-[var(--np-color-primary)] text-[var(--np-background)] ': isActive,
                             'group-hover/tablist:text-[var(--np-background)]': !isActive,
