@@ -1,5 +1,6 @@
 import { ApiError } from '@/types/api';
 import { DateTime } from 'luxon';
+import _ from 'lodash';
 
 export const handleApiError = (error: unknown): ApiError => {
   if (typeof error === 'object' && error !== null && 'message' in error) {
@@ -72,3 +73,5 @@ export const getWeatherIcon = (conditionCode: number, isDay: boolean): string =>
   const iconName = iconMap[conditionCode] //|| "not-available";
   return iconName ? `/${iconName}.svg` : "/placeholder_.svg";
 };
+
+export const isFormEmpty = (formValues:Object):boolean => _.isEmpty(_.pickBy(formValues, _.identity));

@@ -10,14 +10,24 @@ export interface Article {
   author: string;
   published_at: string;
   image_url: string;
-  is_processed: boolean
+  is_processed: boolean;
   topic_id: number;
   created_at: string;
   updated_at: string;
                 
-  topic?: Topic
+  topic?: Topic;
   summary?: Summary;
 
-  processing_error?: string,
-  source_metadata?: any
+  processing_error?: string;
+  source_metadata?: any;
+}
+
+export interface SearchParams {
+  content?: string;
+  title?: string;
+  publishedAfter?: string;
+  publishedBefore?: string;
+  source?: string;
+  topic: Topic | null;
+  sortBy?: 'relevance'
 }

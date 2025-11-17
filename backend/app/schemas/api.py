@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Generic, TypeVar, Optional
 from pydantic import BaseModel
 
@@ -10,3 +11,14 @@ class ApiResponse(BaseModel, Generic[T]):
     
     class Config:
         from_attributes = True
+
+class SearchParams(BaseModel):
+    content: Optional[str] = None
+    title: Optional[str] = None
+    published_after: Optional[date] = None
+    published_before: Optional[date] = None
+    source: Optional[str] = None
+    topic_id: Optional[int] = None
+    sort_by: str = "relevance"
+    skip: int = 0
+    limit: int = 50

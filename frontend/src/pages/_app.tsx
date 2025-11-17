@@ -6,8 +6,8 @@ import { Footer } from '@/components/ui/Footer';
 import { Header } from '@/components/ui/Header';
 import { Topic } from '@/types/topic';
 import { Article } from '@/types/article';
-import '../styles/globals.css'
 import { WeatherProvider } from '@/contexts/WeatherContext';
+import '../styles/globals.css'
 
 interface MyAppProps extends AppProps {
   initialSources: string[];

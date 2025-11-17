@@ -9,15 +9,15 @@ export function useDebounce(callback: (...args: any[]) => void, delay: number) {
     }
 
     timeoutRef.current = setTimeout(() => {
-      callback(...args);
-    }, delay);
-  }, [callback, delay]);
+        callback(...args);
+      }, delay);
+    }, [callback, delay]);
 
-  const cancel = useCallback(() => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-  }, []);
+    const cancel = useCallback(() => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    }, []);
 
   return [debouncedFunction, cancel] as const;
 }

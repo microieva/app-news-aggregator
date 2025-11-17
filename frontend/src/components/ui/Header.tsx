@@ -1,60 +1,53 @@
-import { Topic } from "@/types/topic";
+import clsx from "clsx";
+import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from 'next/router';
 import { DateTime } from "luxon";
-import clsx from "clsx";
-import { Dropdown } from "./Dropdown";
+import { useCallback, useEffect, useState } from "react";
 import { usePage } from "@/contexts/PageContext";
 import { useHeader } from "@/contexts/HeaderContext";
-import { useCallback, useEffect, useState } from "react";
 import { useArticles } from "@/contexts/ArticlesContext";
 import { useDebounce } from "@/utils/hooks";
-import { AnimatePresence, motion } from "framer-motion";
+import { Dropdown } from "./Dropdown";
+import { Topic } from "@/types/topic";
 
 export const Header = () => {
   
   const { sources, topics, loading, error, refreshTopicsWithSource } = useHeader();
   const { source, topic, setTopic, setHomePage } = usePage();
-  const { performSearch, isSearching, clearSearch } = useArticles();
-  const [value, setValue ] = useState<string>();
+  const { performSearch, isSearching, clearSearch, articles, setIsSearchOpen, searchParams, isSearchOpen } = useArticles();
   const router = useRouter();
   const date = DateTime.now();
-  const [localSearchValue, setLocalSearchValue] = useState('');
+  const [localSearchValue, setLocalSearchValue] = useState<string | undefined>(undefined);
   const [isTyping, setIsTyping] = useState(false);
 
+  useEffect(()=> {
+    if (searchParams?.title !== '') setLocalSearchValue(searchParams?.title);
+  }, [searchParams])
+
   const [debouncedSearch, cancelDebouncedSearch] = useDebounce((query: string) => {
-  setIsTyping(false);
-  if (query.trim()) {
-    performSearch(query.trim());
-  }
-}, 500);
+    setIsTyping(false);
+    if (query.trim()) {
+      performSearch({title: query.trim(), source: source || '', topic: topic})
+    }
+  }, 400);
 
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsTyping(true);
     const value = e.target.value;
     setLocalSearchValue(value);
-    setIsTyping(true);
     debouncedSearch(value);
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Immediate search on form submit
-    // if (localSearchValue.trim()) {
-    //   performSearch(localSearchValue.trim());
-    // }
-    console.log('value: ', localSearchValue)
   };
 
   const handleCancelSearch = useCallback(() => {
-  setLocalSearchValue('');
-  setIsTyping(false);
-  cancelDebouncedSearch();
-  clearSearch();
-}, [cancelDebouncedSearch, clearSearch]);
-
-
-  useEffect(()=> {
-    if (value) performSearch(value)
-  },[value])
+    setLocalSearchValue(undefined);
+    setIsTyping(false);
+    cancelDebouncedSearch();
+    clearSearch();
+  }, [cancelDebouncedSearch, clearSearch]);
 
   useEffect(()=> {
     if (source) refreshTopicsWithSource(source);
@@ -63,6 +56,9 @@ export const Header = () => {
   const handlePageChange = (topic:Topic, route:string) => {
     setTopic(topic);
     router.push(`/${route}`);
+  }
+  const toggle = ()=> {
+    setIsSearchOpen(!isSearchOpen)
   }
 
   const goHome = () => {
@@ -91,7 +87,7 @@ export const Header = () => {
     );
   } else {
     return (
-    <div className="pb-1 border-b-2 bg-[var(--np-background)] overflow-hidden">
+    <div className="pb-1 border-b-2 bg-[var(--np-background)]">
       <header className="border-b">
         <div className="grid-header-top">
           <div className="grid-gap grid grid-cols-[1fr_5fr_1fr] grid-rows-1 items-center bg-[var(--np-color-primary)] w-full border-b border-[var(--np-color-primary)]-100">
@@ -111,7 +107,7 @@ export const Header = () => {
               <div className="rounded-bl-md rounded-br-md bg-[var(--np-background)] py-8 text-center">
                 <a 
                   href="/"
-                  className="text-7xl font-bold text-gray-800 hover:text-gray-600"
+                  className="text-7xl font-bold hover:text-gray-600"
                 >
                   <h1 className="font-primary h-full">News Aggregator</h1>
                 </a>
@@ -129,12 +125,12 @@ export const Header = () => {
         </div>
 
         <div className="grid-header-bottom">
-          <div className="row-start-1 col-start-1 flex items-center bg-[var(--np-background)] rounded-br-md">
+          <div className="row-start-1 col-start-1 flex items-center bg-[var(--np-background)] rounded-br-md z-50">
             <Dropdown options={sources} />
           </div>
           <div className="row-start-1 col-start-2 rounded-bl-md rounded-tr-md bg-[var(--np-background)] overflow-hidden">
-            <div className="overflow-x-auto scrollbar-hide h-full">
-                <div 
+            <div className="group/tablist relative overflow-x-auto scrollbar-hide h-full">
+                {/* <div 
                   role="tablist" 
                   className={clsx(
                     'tabs tabs-lift tabs-lg flex whitespace-nowrap min-w-max space-x-1 tabs-no-border h-full transition-colors duration-300',
@@ -146,7 +142,7 @@ export const Header = () => {
                     const isActive = router.asPath.endsWith(`/${route}/`);
                     return (
                       <button 
-                        key={t.name}
+                        key={t.id}
                         role="tab" 
                         onClick={() => handlePageChange(t, route)}
                         className={clsx(
@@ -154,7 +150,40 @@ export const Header = () => {
                           {
                             'tab-active ': isActive,
                             'non-active-hover':!isActive,
-                            'text-[var(--np-color-primary)]': !topic // no topic equals initial state
+                            'text-[var(--np-color-primary)]': !topic // initial state
+                          }
+                        )}
+                      >
+                        {t.name}
+                      </button>  
+                    );
+                  })}
+                </div> */}
+
+                <div 
+                  role="tablist" 
+                  className={clsx(
+                    'tabs tabs-lift tabs-lg flex whitespace-nowrap min-w-max space-x-[1px] tabs-no-border h-full transition-colors duration-300 hover:tab-active',
+                    {
+                      'text-[var(--np-color-primary)] ': !topic,
+                      'group-hover/tablist:bg-[var(--np-color-primary)] group-hover/tablist:text-[var(--np-background)]': true
+                    }
+                  )}
+                >
+                  {topics?.map((t: Topic, i) => {
+                    const route = t.name.replace(/ /g, '-');
+                    const isActive = router.asPath.endsWith(`/${route}/`);
+                    return (
+                      <button 
+                        key={t.id}
+                        role="tab" 
+                        onClick={() => handlePageChange(t, route)}
+                        className={clsx(
+                          'tab tab-lifted h-full flex-shrink-0 transition-colors duration-200 hover:tab-active focus:tab-active',
+                          {
+                            'tab-active bg-[var(--np-color-primary)] text-[var(--np-background)] ': isActive,
+                            'group-hover/tablist:text-[var(--np-background)]': !isActive,
+                            'text-[var(--np-color-primary)] hover:bg-[var(--np-color-primary)] hover:text-[var(--np-background)]': !isActive && !topic
                           }
                         )}
                       >
@@ -163,65 +192,95 @@ export const Header = () => {
                     );
                   })}
                 </div>
-              </div>
-          </div>
-          
+            </div>
+          </div>          
           {/* Search Section */}
-          <div className="row-start-1 col-start-3 rounded-bl-md rounded-tr-md bg-[var(--np-background)] flex group relative hover:cursor-pointer">
-            {/* Expanding search input */}
-            <div className="absolute right-0 top-0 h-full flex items-center transition-all duration-300 ease-in-out w-6 group-hover:w-48 group-hover:-translate-x-42">
-              <form onSubmit={handleSearchSubmit} className="w-full h-full">
-                <input
-                  type="text"
-                  value={localSearchValue}
-                  onChange={handleSearchInputChange}
-                  placeholder="Search articles..."
-                  className="placeholder:text-gray-400 w-full h-full px-3 py-2 bg-[var(--np-background)] border-l rounded-bl-md rounded-tr-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 focus:outline-none"
-                />
-              </form>
-            </div>
-            
-            {/* Search icon with loading indicator */}
-            <div className="w-6 h-6 m-auto z-10 group-hover:opacity-70 transition-opacity flex items-center justify-center relative group">
-              {(isSearching || isTyping) ? (
-                <>
-                  <div className="loading loading-spinner loading-xs group-hover:hidden"></div>
-                  <button
-                    onClick={handleCancelSearch}
-                    className="hidden group-hover:block p-1 rounded transition-colors"
-                    title="Cancel search"
-                  >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+          <div className="px-4 row-start-1 col-start-3 rounded-bl-md rounded-tr-md bg-[var(--np-background)] flex relative">
+            {/* Search button with its own group */}
+            <div className="group relative">
+              {/* Expanding input - now scoped to this group only */}
+              <div className={clsx(
+                "absolute right-0 top-0 h-full flex items-center transition-all duration-300 ease-in-out w-6",
+                {
+                  "group-hover:w-[20rem] group-hover:-translate-x-42": !isSearchOpen
+                }
+              )}>
+                <form onSubmit={handleSearchSubmit} className="w-full h-full">
+                  <input
+                    type="text"
+                    value={searchParams?.title || localSearchValue || ''}
+                    onChange={handleSearchInputChange}
+                    placeholder="Search in titles..."
+                    className={clsx(
+                      "placeholder:text-gray-400 w-full h-full px-3 py-2 bg-[var(--np-background)] rounded-bl-md rounded-tr-md transition-opacity duration-200 focus:outline-none",
+                      {
+                        "opacity-0 group-hover:opacity-100 border-l border-b-[0.8px]": !isSearchOpen
+                      }
+                    )}
+                  />
+                </form>
+              </div>
+
+              {/* Search button content */}
+              <div className={clsx(
+                "h-full w-6 flex items-center justify-center z-50",
+                {
+                  "hover:opacity-70 transition-opacity": !isSearchOpen
+                }
+              )}>
+                {(isSearching || isTyping || localSearchValue || isSearchOpen) ? (
+                  <>
+                    {isSearching && <div className="loading loading-spinner loading-xs group-hover:hidden"></div>}
+                    <button
+                      onClick={handleCancelSearch}
+                      className=" group-hover:block p-1 rounded transition-colors z-10"
+                      title="Cancel search"
+                    >
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </>
+                ) : (
+                  <button className="z-10">
+                    <img 
+                      src="/search-dark.svg"
+                      alt="Search articles"
+                      className="w-6 h-6"
+                    />
                   </button>
-                </>
-              ) : (
-                <img 
-                  src="/search-dark.svg"
-                  alt="Search articles"
-                  className="w-6 h-6"
-                />
-              )}
+                )}
+              </div>
             </div>
+            {/* Advanced search button */}
+            <button 
+              className="mx-auto z-20" 
+              title="Open advanced search" 
+              onClick={() => toggle()}
+            >
+              <img 
+                src="/text-search.svg"
+                alt="Open advanced search"
+                className="w-6 h-6"
+              />
+            </button>
           </div>
         </div>
         {/* Search status bar */}
-        {(isSearching || isTyping || localSearchValue) && (
+        {((isSearching || isTyping) && !isSearchOpen) && (
           <AnimatePresence>
             <motion.div
               initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height:'auto'}}
+              animate={{ opacity: 1, height:!isSearchOpen ? 'auto': 0}}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.5, ease: 'easeInOut' }}
               className="overflow-hidden"
             >
-              <div className="px-4 py-2 text-sm border-t ">
+              <div className="px-4 py-2 text-sm border-t bg-[var(--np-color-primary)] text-[var(--np-background)]">
                 {isTyping && <span>Typing...</span>}
-                {isSearching && !isTyping && <span>Searching for "{localSearchValue}"...</span>}
-                {localSearchValue && !isSearching && !isTyping && (
-                  <span>Showing results for "{localSearchValue}"</span>
-                )}
+                {loading && isSearching && !isTyping && <span>Searching for "{localSearchValue}"...</span>}
+                {!loading && isSearching && articles.length === 0 && !isTyping && <span>No articles found</span>}
+                {!loading && isSearching && articles.length > 0 && !isTyping && <span>Found articles: {articles.length}</span>}
               </div>
             </motion.div>
           </AnimatePresence>

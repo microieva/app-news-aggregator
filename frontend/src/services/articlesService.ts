@@ -1,6 +1,6 @@
-import { ApiResponse, ArticlesData, SourcesData } from '@/types/api';
-import { Article } from '@/types/article';
 import { apiClient } from '@/utils/client';
+import { ApiResponse, ArticlesData, SearchData, SourcesData } from '@/types/api';
+import { Article, SearchParams } from '@/types/article';
 
 export const articlesService = {
 
@@ -57,9 +57,18 @@ export const articlesService = {
     }
   },
 
-  async searchArticles(query:string): Promise<any>{
+  async searchArticles(searchParams:SearchParams): Promise<any>{
+    const params = {
+      ...searchParams,
+      topic_id: searchParams.topic?.id || null,
+      published_after: searchParams.publishedAfter || null,
+      published_before: searchParams.publishedBefore || null,
+      sort_by: searchParams.sortBy 
+    }
+    const config = {params}
     try {
-
+      const repsonse =  await apiClient.get<ApiResponse<SearchData>>(`/articles/search`, config);
+      return repsonse.data;
     } catch (error) {
       console.error('Error fetching used sources:', error);
       throw error;

@@ -1,7 +1,8 @@
+from datetime import datetime
 from typing import List, Optional, Dict, Any
-from sqlalchemy import desc, func, or_
+from sqlalchemy import func, or_
 from app.models import Topic, Article
-from app.schemas import ArticleCreate, ArticleUpdate, ArticleBase
+from app.schemas import ArticleCreate, ArticleUpdate, SearchParams
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -124,7 +125,6 @@ async def get_articles_by_topic_name(
     else:
         order_by_clause = sort_column.asc()
     
-    # Start building the query
     query = (
         select(Article)
         .options(
@@ -133,21 +133,18 @@ async def get_articles_by_topic_name(
         )
         .join(Topic, Article.topic_id == Topic.id)
     )
-    
-    # Apply source filter FIRST if provided
+
     if source:
         query = query.where(Article.source == source)
     
-    # Then apply topic name filter
     query = query.where(Topic.name == topic_name)
-    
-    # Apply sorting and pagination
     query = query.order_by(order_by_clause).offset(skip).limit(limit)
     
     result = await db.execute(query)
     articles = result.scalars().all()
     
     return articles
+
 async def get_articles_by_source(
     db: AsyncSession, 
     source: str, 
@@ -333,35 +330,6 @@ async def get_processing_stats(db: AsyncSession, topic_id: Optional[int] = None)
         "success_rate": round(success_rate, 2)
     }
 
-async def search_articles(
-    db: AsyncSession,
-    query_text: str,
-    topic_id: Optional[int] = None,
-    include_summaries: bool = True,
-    skip: int = 0,
-    limit: int = 50
-) -> List[ArticleBase]:
-    """Search articles by title and content"""
-    search_query = f"%{query_text}%"
-    
-    query = select(Article).where(
-        or_(
-            Article.title.ilike(search_query),
-            Article.content.ilike(search_query)
-        )
-    )
-    
-    if topic_id:
-        query = query.where(Article.topic_id == topic_id)
-    
-    if include_summaries:
-        query = query.options(selectinload(Article.summary))
-    
-    query = query.offset(skip).limit(limit)
-    
-    result = await db.execute(query)
-    return result.scalars().all()
-
 async def get_used_sources(db: AsyncSession) -> List[str]:
     query = (
         select(Article.source)
@@ -376,3 +344,56 @@ async def get_used_sources(db: AsyncSession) -> List[str]:
         return []
     
     return sources
+
+async def search_articles(
+    db: AsyncSession,
+    search_params: SearchParams
+) -> List[Article]:
+
+    params = search_params.model_dump()
+    
+    query = select(Article).options(
+        selectinload(Article.summary), 
+        selectinload(Article.topic)   
+    )
+    
+    if params.get('title'):
+        query = query.filter(Article.title.ilike(f"%{params['title']}%"))
+    
+    if params.get('source'):
+        query = query.filter(Article.source == params['source'])
+    
+    if params.get('content'):
+        content_filter = or_(
+            Article.content.ilike(f"%{params['content']}%")
+        )
+        query = query.filter(content_filter)
+    
+    if params.get('published_after'):
+        published_after_dt = datetime.combine(params['published_after'], datetime.min.time())
+        query = query.filter(Article.published_at >= published_after_dt)
+        print(f"🔍 Filtering published_after: {params['published_after']} -> {published_after_dt}")
+    
+    if params.get('published_before'):
+        published_before_dt = datetime.combine(params['published_before'], datetime.max.time())
+        query = query.filter(Article.published_at <= published_before_dt)
+        print(f"🔍 Filtering published_before: {params['published_before']} -> {published_before_dt}")
+    
+    if params.get('topic_id'):
+        query = query.filter(Article.topic_id == params['topic_id'])
+        
+    sort_by = params.get('sort_by', 'relevance')
+    if sort_by == "newest":
+        query = query.order_by(Article.published_at.desc())
+    elif sort_by == "oldest":
+        query = query.order_by(Article.published_at.asc())
+    elif sort_by == "title_asc":
+        query = query.order_by(Article.title.asc())
+    elif sort_by == "title_desc":
+        query = query.order_by(Article.title.desc())
+    else:
+        query = query.order_by(Article.published_at.desc())
+        
+    result = await db.execute(query)
+    articles = result.scalars().all()
+    return articles

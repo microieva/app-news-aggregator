@@ -47,8 +47,7 @@ export async function getStaticProps({ params }: { params: { category: string } 
     return {
       props: {
         category: categoryName,
-      },
-      revalidate: 3600, // Re-generate page every hour
+      }
     };
   } catch (error) {
     return {

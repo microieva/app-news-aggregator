@@ -6,7 +6,6 @@ import { ArticleBlockTop } from '../ui/ArticleBlockTop';
 import { ArticleBlockBottom } from '../ui/ArticleBlockBottom';
 import { usePage } from '@/contexts/PageContext';
 import { useArticles } from '@/contexts/ArticlesContext';
-import { ArticlePageGrid } from './ArticlePage';
 
 
 export default function CategoryPage() {
@@ -14,11 +13,11 @@ export default function CategoryPage() {
   const {loading, error, articles, refreshArticles} = useArticles();
 
   useEffect(() => {
-    refreshArticles({topic:topic?.name || null, source:source});
+    refreshArticles({topic: topic || null, source:source});
   }, [topic]);
 
   useEffect(() => {
-    refreshArticles({topic:topic?.name || null, source});
+    refreshArticles({topic:topic || null, source});
   }, [source ]);
 
 

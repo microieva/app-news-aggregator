@@ -1,12 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional
+from typing import Any, Optional
 
-from app.core.database import get_db
-from app.schemas import ArticleBase, ArticleList, ArticleUpdate, ArticleCreate, TaskStatusResponse, ApiResponse
+from app.core import get_db, task_manager
+from app.schemas import ArticleBase, ArticleList, ArticleUpdate, ArticleCreate, TaskStatusResponse, ApiResponse, SearchParams
 from app.crud import article as article_crud
 from app.crud import topic as topic_crud
-from app.core.background_tasks import task_manager
 
 router = APIRouter()
 
@@ -115,6 +114,24 @@ async def read_used_topics(
         )
     else:  
         raise HTTPException(status_code=404, detail="No sources found")
+
+@router.get("/search", response_model=ApiResponse)
+async def search_articles(
+    db:AsyncSession = Depends(get_db),
+    search_params: SearchParams = Depends()
+):   
+    articles = await article_crud.search_articles(db, search_params)
+
+    if articles:
+        api_response = ArticleList(
+            articles=articles,
+            total=len(articles)
+        )
+        return ApiResponse(
+            data=api_response
+        )
+    else:  
+        raise HTTPException(status_code=404, detail="No articles found for current parameters")
 
 
 @router.get("/topic/{topic_id}", response_model=ApiResponse)
@@ -280,7 +297,7 @@ async def delete_article(article_id: int, db: AsyncSession = Depends(get_db)):
     
     return {"message": "Article deleted successfully"}
 
-# New endpoints for background task management
+# endpoints for background task management
 @router.get("/{article_id}/tasks")
 async def get_article_tasks(article_id: int, db: AsyncSession = Depends(get_db)):
     """Get all background tasks for an article"""

@@ -1,7 +1,7 @@
 from .topic import TopicBase, TopicCreate, TopicUpdate, TopicWithArticles, TopicList
 from .article import ArticleBase, ArticleCreate, ArticleUpdate, ArticleList, ArticleProcessingStatus, BulkProcessingResult, TaskStatusResponse, ArticleWithSummaryStatus
 from .summary import SummaryBase, SummaryCreate, SummaryUpdate, SummaryWithArticle, SummarizeRequest, SummarizeResponse, BackgroundSummarizeResponse
-from .api import ApiResponse
+from .api import ApiResponse, SearchParams
 from .weather import WeatherCondition, WeatherResponse, CurrentWeather, AirQuality, Location, WeeklyForecastResponse, ForecastDay, ForecastResponse, DailyForecast
 
 __all__ = [
@@ -35,5 +35,6 @@ __all__ = [
     "WeeklyForecastResponse",
     "ForecastDay",
     "ForecastResponse",
-    "DailyForecast"
+    "DailyForecast",
+    "SearchParams"
 ]

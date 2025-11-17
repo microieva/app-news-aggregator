@@ -37,3 +37,9 @@ export interface TopicsData {
   topics: Topic[];
   total: number;
 }
+
+export interface SearchData {
+  articles: Article[]
+  total: number;
+  topic_name?: string;
+}

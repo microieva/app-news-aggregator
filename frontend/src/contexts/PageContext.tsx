@@ -17,7 +17,6 @@ interface PageContextType extends PageState {
   setTopic: (topic: Topic | null) => void;
   clearFilters: () => void;
   setHomePage: () => void;
-  // Helper computed properties
   hasActiveFilters: boolean;
   activeFiltersCount: number;
 }
@@ -77,7 +76,6 @@ export function PageProvider({ children }: PageProviderProps) {
       dispatch({ type: 'SET_HOME_PAGE' }),
   };
 
-  // Helper computed properties
   const hasActiveFilters = !!state.source || !!state.topic;
   const activeFiltersCount = [state.source, state.topic].filter(Boolean).length;
 

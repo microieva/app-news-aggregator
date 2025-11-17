@@ -1,29 +1,15 @@
-import {articlesService} from "@/services/articlesService";
-import { ApiError, ArticlesData } from "@/types/api";
-import { Article } from "@/types/article";
-import { formatDate } from "@/utils/utils";
 import { useState, useEffect } from "react";
+import { useArticles } from "@/contexts/ArticlesContext";
+import { formatDate } from "@/utils/utils";
+import { Article } from "@/types/article";
 
 export const ArticleList = () => {
-  const [articles, setArticles] = useState<Article[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<ApiError>();
-    
-  useEffect(() => {
-    const fetchArticles = async () => {
-      try {
-        setLoading(true);
-        const data: ArticlesData = await articlesService.getArticles();
-        setArticles(data.articles || []);
-      } catch (error) {
-        setError(error as ApiError);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const {loading, error, articles, isSearching, performSearch} = useArticles();
+  const [str, setStr] = useState<string>("Other Top News")
 
-      fetchArticles();
-  }, []);
+  useEffect(()=> {
+    if (isSearching && !loading) setStr(`Search Results: ${articles.length}`)
+  }, [performSearch, isSearching])
 
   const ArticleListItem = ({ article, index }: { article: Article , index:number}) => {
     const date = new Date(article.published_at).toISOString();
@@ -67,7 +53,7 @@ export const ArticleList = () => {
 
   return (
     <div className="container flex flex-col gap-4 p-2 h-60">
-      <h1 className="border-b border-[var(--np-color-primary)] py-2 text-2xl font-bold mb-4">Other Top News</h1>
+      <h1 className="border-b border-[var(--np-color-primary)] py-2 text-2xl font-bold mb-4">{str}</h1>
       {articles.map((article: Article, i:number) =>{ 
         return (
           <div key={i}>
