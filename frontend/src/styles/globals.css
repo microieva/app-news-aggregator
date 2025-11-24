@@ -5,6 +5,10 @@
 
 
 @layer components {
+  .progress {
+    @apply rounded-none h-1 mx-0;
+    --progress-color:var(--np-color-accent)!important; 
+  }
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
@@ -182,4 +186,8 @@ footer {
 .footer h1 {
   font-weight: 900;
 }
+/* .progress {
+  --progress-color: var(--np-color-accent)!important;
+  border-radius: none;
+} */
 

@@ -15,7 +15,7 @@ import { PageFooter } from '../ui/PageFooter';
 
 export default function CategoryPage() {
   const { source, topic } = usePage();
-  const {loading, error, articles, refreshArticles, isSearchOpen, isSearching, searchParams} = useArticles();
+  const {error, articles, refreshArticles, isSearchOpen, isSearching, searchParams} = useArticles();
 
   const CategoryPageGrid = ({ articles }: { articles: Article[] }) => {
     const pageArticles = articles.slice(0, 6);
@@ -49,14 +49,6 @@ export default function CategoryPage() {
       refreshArticles({topic:topic || null, source});
   }, [source, topic]);
 
-
-  if (loading) {
-    return (
-      <div className="mx-auto wrapper">
-        <div className="text-center mx-auto">Loading articles for {topic?.name}...</div>
-      </div>
-    );
-  }
   if (error && error.statusCode !==204) {
       return (
         <ErrorPage error={error} />

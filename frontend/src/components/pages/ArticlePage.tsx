@@ -11,6 +11,7 @@ import { ErrorPage } from "./ErrorPage";
 import { AnimatePresence, motion } from "framer-motion";
 import { SearchComponent } from "../ui/SearchComponent";
 import { WeatherBlock } from "../ui/WeatherBlock";
+import { LoadingPage } from "./LoadingPage";
 
 const GridArticlePage = ({article}: { article:Article}) => {
     const {articles} = useArticles();
@@ -35,7 +36,7 @@ const GridArticlePage = ({article}: { article:Article}) => {
 
 export default function ArticlePage({ id }: ArticlePageProps) {
   const router = useRouter();
-  const {loading, error, articles, refreshArticles, isSearchOpen, isSearching, searchParams} = useArticles();
+  const {error, articles, isSearchOpen, isSearching, searchParams} = useArticles();
 
   const [articleData, setArticleData] = useState<Article>();
   const [isLoading, setIsLoading] = useState(!id);
@@ -61,11 +62,7 @@ export default function ArticlePage({ id }: ArticlePageProps) {
 
   if (router.isFallback || isLoading) {
     return (
-      <div className="wrapper content-center">
-        <div className="text-center text-[var(--np-foreground)]">
-          <p>Loading article...</p>
-        </div>
-      </div>
+      <LoadingPage text="Loading article.."/>
     );
   }
 
@@ -127,7 +124,7 @@ export default function ArticlePage({ id }: ArticlePageProps) {
             transition={{ duration: 0.4, ease: 'easeInOut' }}
             className="overflow-hidden"
           >
-            <div className="grid-article-page">
+            <div className="grid-article-page border-t-2">
               {articleData && <GridArticlePage article={articleData}/>}
               <div className="footer footer-front-page row-start-11 border-t-8">
                 <PageFooter/>

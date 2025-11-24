@@ -1,11 +1,13 @@
 import { useRouter } from "next/router"
 import { ApiError } from "@/types"
+import { AnimatedWrapper } from "../wrappers/AnimatedWrapper";
 
 export const ErrorPage = ({error}: {error:ApiError}) => {
   const router = useRouter();
 
   return (
-    <div className="wrapper flex justify-center">
+    <AnimatedWrapper>
+      <div className="wrapper flex justify-center">
         <div className="text-center content-center">
           <p>{error.statusCode} - {error.message}</p>
           <p><em>{error.detail}</em></p>
@@ -19,5 +21,6 @@ export const ErrorPage = ({error}: {error:ApiError}) => {
           </div>
         </div>
       </div>
+    </AnimatedWrapper>
   )
 }

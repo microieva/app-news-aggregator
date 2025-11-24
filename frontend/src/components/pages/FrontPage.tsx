@@ -11,35 +11,36 @@ import { WeatherBlock } from "../ui/WeatherBlock";
 import { SearchComponent } from "../ui/SearchComponent";
 import { ErrorPage } from "./ErrorPage";
 import { Article } from "@/types";
+import { LoadingPage } from "./LoadingPage";
+import clsx from "clsx";
 
-  const GridFrontPage = ({articles}: {articles:Article[]}) => {
-    return (
-      <>
-        <div className="grid-item-article-block-side">
-          <ArticleBlockSide article={articles[2]}/>
-        </div>
-        <div className="grid-item-article-list bg-article-list">
-          <ArticleList title="Other Top News" articles={articles}/> 
-        </div>
-        <div className="grid-item-article-block-top">
-          <ArticleBlockTop article={articles.find(article => article.image_url !== article.url) || articles[0]}/>
-        </div>
-        <div className="grid-item-article-block-bottom">
-          <ArticleBlockBottom article={articles[3]}/>
-        </div>
-        <div className="grid-item-article-block">
-          <ArticleBlockTop article={articles[1]}/>
-        </div>
-        <div className="grid-item-foreground-block row-start-9">
-          <WeatherBlock/>
-        </div>
-        <div className="footer footer-front-page row-start-11 border-t-8">
-          <PageFooter/>
-        </div>
-      </>
-    )
-  }
-
+const GridFrontPage = ({articles}: {articles:Article[]}) => {
+  return (
+    <>
+      <div className="grid-item-article-block-side">
+        <ArticleBlockSide article={articles[2]}/>
+      </div>
+      <div className="grid-item-article-list bg-article-list">
+        <ArticleList title="Other Top News" articles={articles}/> 
+      </div>
+      <div className="grid-item-article-block-top">
+        <ArticleBlockTop article={articles.find(article => article.image_url !== article.url) || articles[0]}/>
+      </div>
+      <div className="grid-item-article-block-bottom">
+        <ArticleBlockBottom article={articles[3]}/>
+      </div>
+      <div className="grid-item-article-block">
+        <ArticleBlockTop article={articles[1]}/>
+      </div>
+      <div className="grid-item-foreground-block row-start-9">
+        <WeatherBlock/>
+      </div>
+      <div className="footer footer-front-page row-start-11 border-t-8">
+        <PageFooter/>
+      </div>
+    </>
+  )
+}
 
 export default function FrontPage(){
   const {loading, error, articles, refreshArticles, isSearching, searchParams, isSearchOpen} = useArticles();
@@ -51,9 +52,7 @@ export default function FrontPage(){
 
   if (loading) {
     return (
-      <div className="wrapper">
-        <div className="text-center mx-auto">Loading top stories...</div>
-      </div>
+      <LoadingPage text="Loading front page stories.."/>
     );
   }
 
@@ -116,7 +115,9 @@ export default function FrontPage(){
               transition={{ duration: 0.4, ease: 'easeInOut' }}
               className="overflow-hidden"
             >
-              <div className="grid-front-page">
+              <div className={clsx("grid-front-page", {
+                
+              })}>
                 <GridFrontPage articles={articles}/>
               </div>
             </motion.div>
