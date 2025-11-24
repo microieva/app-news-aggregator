@@ -18,7 +18,6 @@
     @apply text-[var(--np-color-primary)] ;
   }
 
-
   .tab-active, .tab-active:hover .tab-active:focus {
     @apply [--tab-bg:var(--np-background)] text-[var(--np-color-primary)]; 
     border: var(--np-background); 
@@ -62,7 +61,7 @@
     @apply grid-rows-[repeat(auto-fit,minmax(15vh,auto))] min-h-[15vh];
   }
   .wrapper {
-    height: calc(100vh - 6rem);
+    height: calc(100vh - 14.5rem);
   }
 }
 
@@ -82,6 +81,9 @@
 }
 
 @layer layout {
+  .app {
+    @apply min-h-screen bg-[var(--np-background)] relative;
+  }
   .page {
     @apply px-4 py-8 min-h-screen bg-[var(--np-background)];
   }
@@ -95,21 +97,21 @@
     @apply grid grid-cols-10 np-grid bg-[var(--np-color-primary)] font-primary grid-gap;
   }
   .grid-item-article-page-block {
-    @apply min-h-screen col-span-8 row-span-5 col-start-1 row-start-1;
+    @apply col-span-8 row-span-5 col-start-1 row-start-1;
   }
   .grid-category-page {
-    @apply grid grid-cols-10 np-grid bg-[var(--np-color-primary)] font-primary grid-gap min-h-[100vh] pt-[2px];
+    @apply grid grid-cols-10 np-grid bg-[var(--np-color-primary)] font-primary grid-gap pt-[2px];
   }
   .grid-front-page {
     @apply frontpage font-primary grid grid-cols-10 np-grid;
   }
   .grid-search-view {
-    @apply grid font-primary np-grid grid-cols-10 bg-[var(--np-color-primary)];
+    @apply grid font-primary np-grid grid-cols-10 bg-[var(--np-color-primary)] ;
       .grid-item-article-list {
         @apply col-span-4 row-span-5 col-start-7 row-start-1 overflow-scroll rounded-tl-md;
       }
       .grid-item-foreground-block {
-        @apply col-span-6 row-span-2 bg-[var(--np-foreground)];
+        @apply col-span-6 row-span-2 bg-[var(--np-foreground)] min-h-[30rem];
       }
   }
   .grid-item-article-list {
@@ -138,7 +140,9 @@
     @apply flex flex-row flex-wrap border-[var(--np-color-primary)];
   }
 }
-
+.tab-active {
+  color: var(--np-color-primary);
+}
 
 * {
   border-color: var(--np-color-primary);
@@ -149,8 +153,11 @@ html, body {
   color: var(--np-color-primary);
 }
 
+
 footer {
   border-top: 1px solid var(--np-color-primary);
+  position:absolute;
+  bottom:-3rem;
 }
 
 .grid-gap {

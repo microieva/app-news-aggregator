@@ -277,53 +277,53 @@ class BackgroundTaskManager:
         if task_id in self.active_tasks:
             del self.active_tasks[task_id]
     
-    async def recover_pending_tasks(self, db_session: AsyncSession):
-        """Recover pending tasks by creating new summaries and deleting old ones"""
-        logger.info("🔄 Recovering pending tasks...")
+    # async def recover_pending_tasks(self, db_session: AsyncSession):
+    #     """Recover pending tasks by creating new summaries and deleting old ones"""
+    #     logger.info("🔄 Recovering pending tasks...")
         
-        try:
-            pending_summaries = await summary_crud.get_pending_summaries(db_session)
-            recovered_count = 0
+    #     try:
+    #         pending_summaries = await summary_crud.get_pending_summaries(db_session)
+    #         recovered_count = 0
             
-            for summary in pending_summaries:
-                try:
-                    article = await article_crud.get_article_by_id(db_session, summary.article_id)
+    #         for summary in pending_summaries:
+    #             try:
+    #                 article = await article_crud.get_article_by_id(db_session, summary.article_id)
                     
-                    if not article or not article.content or len(article.content.strip()) < 50:
-                        logger.warning(f"⚠️ Article {summary.article_id} not found or has insufficient content")
-                        await summary_crud.mark_summary_failed(
-                            db_session, 
-                            summary.id, 
-                            "Article not found or insufficient content"
-                        )
-                        continue
+    #                 if not article or not article.content or len(article.content.strip()) < 50:
+    #                     logger.warning(f"⚠️ Article {summary.article_id} not found or has insufficient content")
+    #                     await summary_crud.mark_summary_failed(
+    #                         db_session, 
+    #                         summary.id, 
+    #                         "Article not found or insufficient content"
+    #                     )
+    #                     continue
                     
 
-                    await summary_crud.delete_summary(db_session, summary.id)
+    #                 await summary_crud.delete_summary(db_session, summary.id)
                     
-                    task_id = await self._submit_article_for_summarization(
-                        db=db_session,
-                        article_id=article.id,
-                        article_content=article.content,
-                        article_title=article.title,
-                        preferred_provider=summary.provider if summary.provider else None,
-                        quality_level=summary.quality_level
-                    )
+    #                 task_id = await self._submit_article_for_summarization(
+    #                     db=db_session,
+    #                     article_id=article.id,
+    #                     article_content=article.content,
+    #                     article_title=article.title,
+    #                     preferred_provider=summary.provider if summary.provider else None,
+    #                     quality_level=summary.quality_level
+    #                 )
                     
-                    if task_id:
-                        logger.info(f"🔄 Replaced pending summary {summary.id} with new task {task_id}")
-                        recovered_count += 1
+    #                 if task_id:
+    #                     logger.info(f"🔄 Replaced pending summary {summary.id} with new task {task_id}")
+    #                     recovered_count += 1
                         
-                except Exception as e:
-                    logger.error(f"❌ Error recovering summary {summary.id}: {e}")
-                    await summary_crud.mark_summary_failed(db_session, summary.id, f"Recovery error: {str(e)}")
+    #             except Exception as e:
+    #                 logger.error(f"❌ Error recovering summary {summary.id}: {e}")
+    #                 await summary_crud.mark_summary_failed(db_session, summary.id, f"Recovery error: {str(e)}")
             
-            await db_session.commit()
-            logger.info(f"✅ Recovered {recovered_count} pending summarization tasks")
+    #         await db_session.commit()
+    #         logger.info(f"✅ Recovered {recovered_count} pending summarization tasks")
             
-        except Exception as e:
-            await db_session.rollback()
-            logger.error(f"❌ Error in recover_pending_tasks: {e}")
+    #     except Exception as e:
+    #         await db_session.rollback()
+    #         logger.error(f"❌ Error in recover_pending_tasks: {e}")
 
     async def get_active_tasks_count(self) -> int:
         """Get number of actively processing tasks"""
@@ -354,6 +354,58 @@ class BackgroundTaskManager:
     async def get_pending_tasks_count(self) -> int:
         """Get number of pending tasks in queue"""
         return self.task_queue.qsize()
+    
+    async def recover_pending_tasks(self, db_session: AsyncSession):
+        """Recover pending tasks by creating new summaries and deleting old ones"""
+        logger.info("🔄 Recovering pending tasks...")
+        
+        try:
+            pending_summaries_result = await summary_crud.get_pending_summaries(db_session)
+            # Extract the actual Summary objects from the result
+            pending_summaries = pending_summaries_result.scalars().all() if hasattr(pending_summaries_result, 'scalars') else pending_summaries_result
+            
+            recovered_count = 0
+            
+            for summary in pending_summaries:
+                try:
+                    article = await article_crud.get_article_by_id(db_session, summary.article_id)
+                    
+                    if not article or not article.content or len(article.content.strip()) < 50:
+                        logger.warning(f"⚠️ Article {summary.article_id} not found or has insufficient content")
+                        await summary_crud.mark_summary_failed(
+                            db_session, 
+                            summary.id, 
+                            "Article not found or insufficient content"
+                        )
+                        continue
+                    
+                    # Delete the old pending summary
+                    await summary_crud.delete_summary(db_session, summary.id)
+                    
+                    # Create a new summarization task
+                    task_id = await self._submit_article_for_summarization(
+                        db=db_session,
+                        article_id=article.id,
+                        article_content=article.content,
+                        article_title=article.title,
+                        preferred_provider=summary.provider if summary.provider else None,
+                        quality_level=summary.quality_level
+                    )
+                    
+                    if task_id:
+                        logger.info(f"🔄 Replaced pending summary {summary.id} with new task {task_id}")
+                        recovered_count += 1
+                        
+                except Exception as e:
+                    logger.error(f"❌ Error recovering summary {summary.id}: {e}")
+                    await summary_crud.mark_summary_failed(db_session, summary.id, f"Recovery error: {str(e)}")
+            
+            await db_session.commit()
+            logger.info(f"✅ Recovered {recovered_count} pending summarization tasks")
+            
+        except Exception as e:
+            await db_session.rollback()
+            logger.error(f"❌ Error in recover_pending_tasks: {e}")
 
 
 task_manager = BackgroundTaskManager()

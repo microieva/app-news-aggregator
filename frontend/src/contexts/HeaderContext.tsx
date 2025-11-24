@@ -68,8 +68,8 @@ export function HeaderProvider({
     {
       fallbackData: initialTopics,
       revalidateOnFocus: false,
-      dedupingInterval: 300000, // 5 minutes
-      refreshInterval: 1800000, // 30 minutes
+      // dedupingInterval: 300000, // 5 minutes
+      // refreshInterval: 1800000, // 30 minutes
     }
   );
 

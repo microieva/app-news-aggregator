@@ -1,5 +1,5 @@
-from fastapi import APIRouter, HTTPException, Request
 import httpx
+from fastapi import APIRouter, HTTPException, Request
 from app.schemas import DailyForecast, WeatherCondition, WeatherResponse, WeeklyForecastResponse
 from app.services.weather_service import weather_service
 from typing import Optional
@@ -71,7 +71,6 @@ async def get_weekly_forecast(
         if not forecast_data:
             raise HTTPException(status_code=404, detail="Forecast data not found")
         
-        # Transform to simplified format
         simplified_forecast = []
         for day_data in forecast_data["forecast"]["forecastday"]:
             simplified_forecast.append(DailyForecast(

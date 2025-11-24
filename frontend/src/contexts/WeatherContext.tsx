@@ -90,8 +90,8 @@ export function WeatherProvider({
     {
       fallbackData: initialWeather,
       revalidateOnFocus: false,
-      dedupingInterval: 300000, // 5 minutes
-      refreshInterval: 300000,
+      // dedupingInterval: 300000, // 5 minutes
+      // refreshInterval: 300000,
       onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
         if (error.status === 404 || error.status === 500) return;
         setTimeout(() => revalidate({ retryCount }), 5000);

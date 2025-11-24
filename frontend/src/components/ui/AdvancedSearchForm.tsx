@@ -3,11 +3,13 @@ import clsx from "clsx";
 import { useState } from "react";
 import { useArticles } from "@/contexts/ArticlesContext";
 import { useHeader } from "@/contexts/HeaderContext";
+import { usePage } from '@/contexts/PageContext';
 import { SearchParams, Topic } from "@/types";
 
 export const AdvancedSearchForm = () => {
-  const { clearSearch, loading, searchParams, performSearch, setIsSearchOpen} = useArticles();
-  const {sources, topics} = useHeader();
+  const { clearSearch, loading, searchParams, performSearch, setIsSearchOpen } = useArticles();
+  const { sources, topics } = useHeader();
+  const { topic, source } = usePage();
 
   const [formValues, setFormValues] = useState<SearchParams>({ 
     content:searchParams?.content ||  '',
@@ -34,8 +36,9 @@ export const AdvancedSearchForm = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const topic: Topic | undefined = topics.find(topic => topic.id === formValues.topic?.id)
-    performSearch({...formValues, topic:topic || null})
+    let topicId = formValues.topic?.id || topic?.id;
+    const searchTopic: Topic | null = topics.find(topic => topic.id === topicId) || null;
+    performSearch({...formValues, topic:searchTopic});
   };
 
   const handleReset = () => {
@@ -145,12 +148,13 @@ export const AdvancedSearchForm = () => {
           </label>
           <select 
             name="source"
-            value={formValues.source}
+            value={source || formValues.source}
             onChange={handleInputChange}
+            disabled={Boolean(source)}
             className={clsx(
-              "placeholder:text-[var(--np-foreground)] select select-sm select-bordered border-[var(--np-color-primary)] w-full focus:border-[var(--np-foreground)] rounded-md",
+              "placeholder:text-[var(--np-foreground)] select select-sm select-bordered border-[var(--np-color-primary)] w-full focus:border-[var(--np-foreground)] rounded-md disabled:bg-[var(--np-foreground)] disabled:border-gray-600",
               {
-                "bg-[var(--np-foreground)]": formValues.source !== '',
+                "bg-[var(--np-foreground)]": formValues.source !== '' || source,
                 "bg-[var(--np-background)]": formValues.source === ''
               }
             )}
@@ -170,12 +174,12 @@ export const AdvancedSearchForm = () => {
           </label>
           <select 
             name="topic"
-            value={formValues.topic?.name || ''}
+            value={formValues.topic?.name || topic?.name || ''}
             onChange={handleInputChange}
             className={clsx(
               "placeholder:text-[var(--np-foreground)] select select-sm select-bordered border-[var(--np-color-primary)] w-full focus:border-[var(--np-foreground)] rounded-md",
               {
-                "bg-[var(--np-foreground)]": (formValues.topic as Topic)?.name,
+                "bg-[var(--np-foreground)]": (formValues.topic as Topic)?.name || topic?.name,
                 "bg-[var(--np-background)]": !formValues.topic
               }
             )}

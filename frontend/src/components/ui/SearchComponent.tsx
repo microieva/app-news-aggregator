@@ -2,9 +2,11 @@ import { AnimatePresence, motion } from "framer-motion"
 import { useArticles } from "@/contexts/ArticlesContext";
 import { ArticleList } from "./ArticleList";
 import { AdvancedSearchForm } from "./AdvancedSearchForm";
+import clsx from "clsx";
+
 
 export const SearchComponent = () => {
-  const { isSearching, articles, loading, searchParams } = useArticles();
+  const { isSearching, articles, loading, searchParams, error } = useArticles();
 
   return (
     <AnimatePresence>
@@ -31,19 +33,21 @@ export const SearchComponent = () => {
             </div>
             
             {/* Results Side */}
-            <div className="font-primary bg-[var(--np-background)] px-4 overflow-auto min-h-[500px] border-l">
+            <div className={
+              clsx(
+                "font-primary bg-[var(--np-background)] px-4 overflow-auto min-h-[500px] border-l", 
+                {"content-center" : isSearching}
+              )}>
               {/* Loading State */}
-              {(isSearching && articles.length === 0) && (
-                <div className="flex items-center justify-center h-full">
-                  <div className="text-center">
-                    <div className="loading loading-spinner loading-lg mb-4"></div>
-                    <p className="text-lg font-helvetica">Searching articles...</p>
-                  </div>
+              {(isSearching && !loading && !error) && (
+                <div className="text-center text-[var(--np-foreground)]">
+                  <div className="loading loading-spinner loading-lg mb-4"></div>
+                  <p className="text-lg font-helvetica">Searching articles...</p>
                 </div>
               )}
               
               {/* Results State */}
-              {isSearching && searchParams && articles.length > 0 && (
+              {!isSearching && searchParams && articles.length > 0 && (
                 <AnimatePresence>
                   <motion.div
                     initial={{ opacity: 0 }}
@@ -51,20 +55,25 @@ export const SearchComponent = () => {
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.5, ease: 'easeInOut' }}
                   >
-                    <ArticleList/>
+                    <ArticleList title={`Search results: ${articles.length}`} articles={!error ? articles : []}/>
                   </motion.div>
                 </AnimatePresence>
               )}
               
               {/* No Results State */}
-              {!loading && !isSearching && articles.length === 0 && searchParams && (
-                <div className="flex items-center justify-center h-full min-h-[400px]">
-                  <div className="text-center">
-                    <div className="text-4xl mb-4">🔍</div>
-                    <p className="text-lg font-semibold mb-2">No articles found</p>
-                    <p className="text-sm opacity-70">Try different search terms or filters</p>
-                  </div>
-                </div>
+              {error && error.statusCode===204 && searchParams && (
+                <AnimatePresence>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5, ease: 'easeInOut' }}
+                  >
+                    <div className="text-center">
+                      <p className="text-lg font-helvetica text-[var(--np-foreground)]">No results found</p>
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
               )}
             </div>
           </div>

@@ -43,3 +43,8 @@ export interface SearchData {
   total: number;
   topic_name?: string;
 }
+
+export interface PageParams {
+  source: string | null;
+  topic: Topic | null;
+}

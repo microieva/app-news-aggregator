@@ -21,9 +21,9 @@ function App({ Component, pageProps, initialSources, initialTopics, initialArtic
       <HeaderProvider initialSources={initialSources} initialTopics={initialTopics}>
         <PageProvider>
           <ArticlesProvider initialArticles={initialArticles}>
-            <div className="min-h-screen bg-[var(--np-background)]'">
+            <div className="app">
               <Header/>
-              <main className='bg-[var(--np-background)]'>
+              <main>
                 <Component {...pageProps} />
               </main>
               <Footer/>

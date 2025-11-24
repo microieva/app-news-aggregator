@@ -1,4 +1,4 @@
-export const FrontPageFooter = () => {
+export const PageFooter = () => {
   return (
     <div className="border-t-[1px] border-[var(--np-color-primary)] w-full">
           <div className="grid grid-cols-3 grid-rows-2 w-full px-4 gap-y-1 my-4 font-secondary">
@@ -22,7 +22,7 @@ export const FrontPageFooter = () => {
               <p>ieva.vyliaudaite@me.com</p>
             </div>
           </div>
-          <h1 className="text-9xl mx-auto my-4">News Paper</h1>
+          <h1 className="text-9xl mx-auto my-4 font-primary">News Paper</h1>
         </div>
   )
 }

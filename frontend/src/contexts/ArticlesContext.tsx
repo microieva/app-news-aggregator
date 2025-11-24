@@ -1,7 +1,7 @@
 import useSWR from 'swr';
 import { createContext, useContext, ReactNode, useState } from 'react';
 import { articlesService } from '@/services/articlesService';
-import { ApiError, ArticlesData } from '@/types/api';
+import { ApiError, ArticlesData, PageParams } from '@/types/api';
 import { Article, SearchParams } from '@/types/article';
 import { Topic } from '@/types';
 
@@ -12,7 +12,7 @@ interface ArticlesContextType {
   isSearching: boolean;
   searchParams: SearchParams | undefined;
   isSearchOpen: boolean;
-  refreshArticles: (args: { source: string | null; topic: Topic | null }) => Promise<void>;
+  refreshArticles: (args: PageParams) => Promise<void>;
   performSearch: (params: SearchParams) => Promise<void>;
   clearSearch: () => void;
   setIsSearchOpen: (bool:boolean) => void;
@@ -35,9 +35,9 @@ const fetchers = {
     let data: ArticlesData;
     
     if (topic) {
-      data = await articlesService.getArticlesByTopicName(topic.name, source || undefined);
+      data = await articlesService.getArticlesByTopicId(topic.id, source as string);
     } else {
-      data = await articlesService.getArticles(source || undefined);
+      data = await articlesService.getArticles(source);
     } 
     
     return data.articles;
@@ -68,9 +68,7 @@ export function ArticlesProvider({
     {
       fallbackData: initialArticles,
       revalidateOnFocus: false,
-      dedupingInterval: 60000,
-      refreshInterval: 300000,
-      shouldRetryOnError: (error) => error.statusCode !== 404,
+      shouldRetryOnError: (error) => error.statusCode !== 204,
     }
   );
 
@@ -78,7 +76,6 @@ export function ArticlesProvider({
     setManualError(null);
     setIsSearching(false);
     setSearchParams(undefined);
-    
     try {
       if (source || topic) {
         const filteredData = await fetchers.getArticles(source, topic);
@@ -89,7 +86,7 @@ export function ArticlesProvider({
     } catch (error) {
       const apiError = error as ApiError;
       
-      if (apiError.statusCode === 404) {
+      if (apiError) {
         mutateArticles([], false); 
         setManualError(apiError);
       } else {
@@ -101,17 +98,25 @@ export function ArticlesProvider({
   const performSearch = async (params: SearchParams) => {
     setManualError(null);
     setIsSearching(true);
-    mutateArticles([], false);
+
     if (params) setSearchParams(params);
 
     try {
       const searchResults = await fetchers.searchArticles(params);
-      mutateArticles(searchResults, false);
+      setIsSearching(false);
+      if (searchResults.length === 0) {
+        const apiError = {
+          statusCode: 204,
+          detail: "No results found"
+        }
+        setManualError(apiError);
+      } else {
+        mutateArticles(searchResults, false);
+      }
     } catch (error) {
       const apiError = error as ApiError;
-      
-      if (apiError.statusCode === 404) {
-        console.warn(`No articles found for search: "${JSON.stringify(params)}"`);
+      setIsSearching(false);
+      if (apiError) {
         mutateArticles([], false);
         setManualError(apiError);
       } else {
@@ -126,7 +131,6 @@ export function ArticlesProvider({
     setIsSearchOpen(false);
     setSearchParams(undefined);
     setManualError(null);
-    mutateArticles(); 
   };
 
   const error = manualError || swrError;

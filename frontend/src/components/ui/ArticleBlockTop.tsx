@@ -1,5 +1,6 @@
 import { Article } from "@/types/article";
 import { ArticleTitle } from "./ArticleTitlte";
+import { ImageWrapper } from "./ImageWrapper";
 
 export const ArticleBlockTop = ({ article }: { article: Article }) => {
 
@@ -15,13 +16,14 @@ export const ArticleBlockTop = ({ article }: { article: Article }) => {
             </div>
           </div>
           {article.image_url && (
-            <div className="bg-[var(--np-background)]">
-              <img 
-                src={article.image_url} 
-                alt={article.title} 
-                className="w-full h-50 object-center mt-4 opacity-70"
-              />
-            </div>
+            // <div className="bg-[var(--np-background)] aspect-[16/9] max-h-[50vh] overflow-hidden w-full">
+            //   <img 
+            //     src={article.image_url} 
+            //     alt={article.title} 
+            //     className="w-full h-full object-cover object-center mt-4 opacity-70"
+            //   />
+            // </div>
+            <ImageWrapper url={article.image_url} title={article.title} classNames={["max-w-[55rem] mx-auto"]}/>
           )}
           <div className="p-4">
             <div className="flex flex-col gap-2">

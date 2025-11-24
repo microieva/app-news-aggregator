@@ -2,11 +2,8 @@ import { useRouter } from 'next/router';
 import CategoryPage from '@/components/pages/CategoryPage';
 import { topicsService } from '@/services/topicsService';
 import { TopicsData } from '@/types/api';
+import { Topic } from '@/types';
 
-interface Topic {
-  id: string;
-  name: string;
-}
 
 export async function getStaticPaths() {
   try {
@@ -26,11 +23,12 @@ export async function getStaticPaths() {
     console.error('Error generating static paths:', error);
     
     const fallbackPaths = [
-      'technology',
-      'business',
-      'science',
-      'health',
-      'environment'
+      // 'technology',
+      // 'business',
+      // 'science',
+      // 'health',
+      // 'environment'
+      "fallback"
     ].map(category => ({ params: { category } }));
 
     return {

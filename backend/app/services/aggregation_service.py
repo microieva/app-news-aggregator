@@ -144,7 +144,7 @@ class AggregationService:
             try:
                 for article_data in articles:
                     article_create = ArticleCreate(**article_data)
-                    existing_article = await article_crud.get_by_url(db_session, article_create.url)
+                    existing_article = await article_crud.get_article_by_url(db_session, article_create.url)
                     
                     if not existing_article:
                         created_article = await article_crud.create_article(db_session, article_create)

@@ -35,8 +35,10 @@ export default function ArticleRoute({ id }: ArticleRouteProps) {
 
   if (router.isFallback) {
     return (
-      <div className="mx-auto px-4 py-8">
-        <div className="text-center">Loading article...</div>
+      <div className="wrapper content-center">
+        <div className="text-center text-[var(--np-foreground)]">
+          <p>Loading article...</p>
+        </div>
       </div>
     );
   }

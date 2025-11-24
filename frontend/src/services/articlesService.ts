@@ -4,21 +4,21 @@ import { Article, SearchParams } from '@/types/article';
 
 export const articlesService = {
 
-  async getArticles(source?: string, skip: number = 0, limit: number = 100): Promise<ArticlesData> {
-    const config = source ? { params: { source } } : undefined;
+  async getArticles(source:string | null, skip: number = 0, limit: number = 100 ): Promise<ArticlesData> {
     try {
-      const response =  await apiClient.get<ApiResponse<ArticlesData>>('/articles/with-summaries', config);
+      const config = source ? { params: { source, skip, limit } } : undefined;
+      const response =  await apiClient.get<ApiResponse<ArticlesData>>('/articles/', config);
       return response.data;
     } catch (error) {
-      console.error('Error fetching topics:', error);
+      console.error('Error fetching articles:', error);
       throw error;
     }
   },
 
-  async getArticlesByTopicName(topic:string, source?:string): Promise<ArticlesData> {
+  async getArticlesByTopicId(topicId:string, source?:string, skip: number = 0, limit: number = 100): Promise<ArticlesData> {
     try {
-      const config = source ? { params: { source } } : undefined;
-      const response =  await apiClient.get<ApiResponse<ArticlesData>>(`/articles/topic-name/${encodeURIComponent(topic)}`, config);
+      const config = source ? { params: { source, skip, limit } } : undefined;
+      const response =  await apiClient.get<ApiResponse<ArticlesData>>(`/articles/topic/${encodeURIComponent(topicId)}`, config);
       return response.data;
     } catch (error) {
       console.error('Error fetching articles:', error);
@@ -29,7 +29,7 @@ export const articlesService = {
   async getFrontPageArticles(source?: string): Promise<ArticlesData> {
     try {
       const config = source ? { params: { source } } : undefined;
-      const response =  await apiClient.get<ApiResponse<ArticlesData>>('/articles/with-summaries', config);
+      const response =  await apiClient.get<ApiResponse<ArticlesData>>('/articles/frontpage', config);
       return response.data;
     } catch (error) {
       console.error('Error fetching articles:', error);
@@ -37,12 +37,12 @@ export const articlesService = {
     }
   },
 
-  async getArticleById(id: string): Promise<Article> {
+  async getArticleById(article_id: string): Promise<Article> {
     try {
-      const response = await apiClient.get<ApiResponse<Article>>(`/articles/${id}`);
+      const response = await apiClient.get<ApiResponse<Article>>(`/articles/article/${article_id}`);
       return response.data;
     } catch (error) {
-      console.error(`Error fetching article ${id}:`, error);
+      console.error(`Error fetching article ${article_id}:`, error);
       throw error;
     }
   },
@@ -70,7 +70,7 @@ export const articlesService = {
       const repsonse =  await apiClient.get<ApiResponse<SearchData>>(`/articles/search`, config);
       return repsonse.data;
     } catch (error) {
-      console.error('Error fetching used sources:', error);
+      console.error('Error searching articles:', error);
       throw error;
     }
   }

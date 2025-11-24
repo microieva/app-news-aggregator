@@ -1,11 +1,8 @@
 from fastapi import FastAPI
 import uvicorn
-from app.core.config import settings
-from app.core.middleware import setup_cors
 from app.api.routes import api_router
-from app.core.favicon import favicon_router
+from app.core import favicon_router, settings, setup_exception_handlers, app_lifespan, setup_cors
 from app.services.llm import register_providers
-from app.core.lifespan import app_lifespan
 
 
 def create_application() -> FastAPI:
@@ -27,6 +24,7 @@ def create_application() -> FastAPI:
 
 register_providers()
 app = create_application()
+setup_exception_handlers(app)
 
 
 if __name__ == "__main__":
