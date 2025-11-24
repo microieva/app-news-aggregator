@@ -7,7 +7,7 @@ export const WeeklyForecast = () => {
   const { forecast, refreshForecast} = useWeather();
   
   useEffect(()=>{
-    if (!forecast) refreshForecast();
+    refreshForecast();
   }, [forecast])
 
   return (

@@ -6,12 +6,12 @@ export const CurrentWeather = ()=> {
   const { weather, refreshWeather } = useWeather();
 
   useEffect(()=>{
-    if (!weather?.current) refreshWeather();
+    refreshWeather();
   }, [weather])
   
   
   return (
-    <div className='w-full h-full flex flex-col justify-between px-4 bg-[var(--np-foreground)] rounded-tr-xl rounded-bl-xl'>
+    <div className='w-full h-[28rem] flex flex-col justify-between px-4 bg-[var(--np-foreground)] rounded-tr-xl rounded-bl-xl'>
       <div className='mt-4'>
         <h3 className="card-title text-2xl font-bold">{weather?.location.name}</h3>
         <p className="text-xs font-bold text-gray-600">{weather?.location.region}, {weather?.location.country}</p>

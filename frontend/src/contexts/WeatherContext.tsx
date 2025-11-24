@@ -133,7 +133,7 @@ export function WeatherProvider({
     refreshForecast,
     refreshData,
     getWeatherForLocation,
-    currentLocation: weather?.location?.name || null, // Added optional chaining
+    currentLocation: weather?.location?.name || null, 
   };
 
   return (
