@@ -1,119 +1,243 @@
-import { useEffect } from 'react';
-import { AnimatePresence, motion } from "framer-motion";
-import { ArticleList } from '../ui/ArticleList';
-import { ArticleBlockSide } from '../ui/ArticleBlockSide';
-import { ArticleBlockTop } from '../ui/ArticleBlockTop';
-import { ArticleBlockBottom } from '../ui/ArticleBlockBottom';
-import { usePage } from '@/contexts/PageContext';
+import { memo, useEffect, useRef, useCallback, useMemo, useState, useLayoutEffect, Suspense } from 'react';
 import { useArticles } from '@/contexts/ArticlesContext';
-import { Article } from '@/types/article';
-import { ErrorPage } from './ErrorPage';
+import { usePage } from '@/contexts/PageContext';
+import { AnimatePresence, motion, useScroll } from 'framer-motion';
+import { Article, Topic } from '@/types';
+import { ArticleList } from '../ui/ArticleList';
+import { PageFooter } from '../ui/PageFooter';
 import { SearchComponent } from '../ui/SearchComponent';
 import { WeatherBlock } from '../ui/WeatherBlock';
-import { PageFooter } from '../ui/PageFooter';
+import { ErrorPage } from './ErrorPage';
+import { ArticleBlockBottom } from '../ui/ArticleBlockBottom';
+import { ArticleBlockSide } from '../ui/ArticleBlockSide';
+import { ArticleBlockTop } from '../ui/ArticleBlockTop';
+import { useRouter } from 'next/router';
+import { useSearchParams } from 'next/navigation'
 
+const CategoryPageGrid = memo(({ 
+  articles, 
+  total, 
+  loading, 
+  onLoadMore,
+  gridRefs 
+}: { 
+  articles: Article[], 
+  total: number, 
+  loading: boolean,
+  onLoadMore: (e: React.MouseEvent) => void,
+  gridRefs: React.MutableRefObject<(HTMLDivElement | null)[]>
+}) => {
+  const [hasMore, setHasMore] = useState<boolean>(false);
 
-export default function CategoryPage() {
-  const { source, topic } = usePage();
-  const {error, articles, refreshArticles, isSearchOpen, isSearching, searchParams} = useArticles();
+  useEffect(() => {
+    setHasMore(total - articles.length >= 4);
+  }, [total, articles.length]);
 
-  const CategoryPageGrid = ({ articles }: { articles: Article[] }) => {
-    const pageArticles = articles.slice(0, 6);
-
-    return (
-      <>
-        <div className="grid-item-article-block-side" >
-          {pageArticles[2] && <ArticleBlockSide article={pageArticles[2]}/>}
-        </div>
-        <div className="grid-item-article-list bg-article-list">
-          <ArticleList title="Other Top News" articles={articles}/> 
-        </div>
-        <div className="grid-item-article-block-top">
-          <ArticleBlockTop article={pageArticles.find(article => article.image_url !== article.url) || pageArticles[0]}/>
-        </div>
-
-        <div className="grid-item-article-block-bottom">
-          {pageArticles[3] && <ArticleBlockBottom article={pageArticles[3]}/>}
-        </div>
-        <div className="grid-item-article-block">
-          {pageArticles[1] && <ArticleBlockTop article={pageArticles[1]}/>}
-        </div>
-        <div className="grid-item-foreground-block row-start-9">
-          show used sources & IF at least 4 more articles, then button to load more stories
-        </div>
-      </>
-    )
-  }
-
-   useEffect(() => {
-      refreshArticles({topic:topic || null, source});
-  }, [source, topic]);
-
-  if (error && error.statusCode !==204) {
-      return (
-        <ErrorPage error={error} />
-      );
+  const gridChunks = useMemo(() => {
+    const articlesPerGrid = 5;
+    const chunks = [];
+    for (let i = 0; i < articles.length; i += articlesPerGrid) {
+      chunks.push(articles.slice(i, i + articlesPerGrid));
     }
+    return chunks;
+  }, [articles]);
+
+  const handleScrollUp = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    }); 
+  };
 
   return (
-  <div className="mx-auto bg-[var(--np-background)]">
-    {/* Search Component */}
-    <AnimatePresence>
-      {isSearchOpen && (
-        <motion.div
-          key="search-component"
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          exit={{ opacity: 0, height: 0 }}
-          transition={{ duration: 0.4, ease: 'easeInOut' }}
-          className="overflow-hidden"
+    <>
+      {gridChunks.map((chunkArticles, gridIndex) => (
+        <div 
+          key={`grid-${gridIndex}`}   
+          ref={el => { gridRefs.current[gridIndex] = el; }}
+          className="grid-category-page"
         >
-          <SearchComponent /> 
-        </motion.div>
-      )}
-    </AnimatePresence>
+          {/* First Grid Cell - Article Block Side */}
+          <div className="grid-item-article-block-side">
+            {chunkArticles[2] && <ArticleBlockSide article={chunkArticles[2]}/>}
+          </div>
+          
+          {/* Second Grid Cell - Article List */}
+          <div className="grid-item-article-list bg-article-list">
+            <ArticleList 
+              title={gridIndex === 0 ? "Other Top Stories" : `More Stories ${gridIndex + 1}`} 
+              articles={chunkArticles}
+            /> 
+          </div>
+          
+          {/* Third Grid Cell - Article Block Top */}
+          <div className="grid-item-article-block-top" id="reviews">
+            <ArticleBlockTop article={
+              chunkArticles.find((article: Article) => article.image_url !== article.url) || chunkArticles[0]
+            }/>
+          </div>
+          
+          {/* Fourth Grid Cell - Article Block Bottom */}
+          <div className="grid-item-article-block-bottom">
+            {chunkArticles[3] && <ArticleBlockBottom article={chunkArticles[3]}/>}
+          </div>
+          
+          {/* Fifth Grid Cell - Another Article Block Top */}
+          <div className="grid-item-article-block">
+            {chunkArticles[1] && <ArticleBlockTop article={chunkArticles[1]}/>}
+          </div>
+          
+          {/* Load More Button - Only show on the last grid */}
+          <div className="grid-item-foreground-block row-start-9 text-center content-center">
+          {gridIndex === gridChunks.length - 1 && hasMore ? (
+              <button 
+                type="button"
+                onClick={onLoadMore}
+                disabled={loading}
+                className="border-b border-[var(--np-color-primary)] py-2 mx-auto font-bold mb-4 w-[50%] hover:text-gray-600 hover:border-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Loading...' : `View More Stories (${total - articles.length} remaining)`}
+              </button>)
+              :
+              <div className="content-center h-full">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="m-auto h-16 text-[--np-background]">
+                    <path d="M16.555 5.412a8.028 8.028 0 0 0-3.503-2.81 14.899 14.899 0 0 1 1.663 4.472 8.547 8.547 0 0 0 1.84-1.662ZM13.326 7.825a13.43 13.43 0 0 0-2.413-5.773 8.087 8.087 0 0 0-1.826 0 13.43 13.43 0 0 0-2.413 5.773A8.473 8.473 0 0 0 10 8.5c1.18 0 2.304-.24 3.326-.675ZM6.514 9.376A9.98 9.98 0 0 0 10 10c1.226 0 2.4-.22 3.486-.624a13.54 13.54 0 0 1-.351 3.759A13.54 13.54 0 0 1 10 13.5c-1.079 0-2.128-.127-3.134-.366a13.538 13.538 0 0 1-.352-3.758ZM5.285 7.074a14.9 14.9 0 0 1 1.663-4.471 8.028 8.028 0 0 0-3.503 2.81c.529.638 1.149 1.199 1.84 1.66ZM17.334 6.798a7.973 7.973 0 0 1 .614 4.115 13.47 13.47 0 0 1-3.178 1.72 15.093 15.093 0 0 0 .174-3.939 10.043 10.043 0 0 0 2.39-1.896ZM2.666 6.798a10.042 10.042 0 0 0 2.39 1.896 15.196 15.196 0 0 0 .174 3.94 13.472 13.472 0 0 1-3.178-1.72 7.973 7.973 0 0 1 .615-4.115ZM10 15c.898 0 1.778-.079 2.633-.23a13.473 13.473 0 0 1-1.72 3.178 8.099 8.099 0 0 1-1.826 0 13.47 13.47 0 0 1-1.72-3.178c.855.151 1.735.23 2.633.23ZM14.357 14.357a14.912 14.912 0 0 1-1.305 3.04 8.027 8.027 0 0 0 4.345-4.345c-.953.542-1.971.981-3.04 1.305ZM6.948 17.397a8.027 8.027 0 0 1-4.345-4.345c.953.542 1.971.981 3.04 1.305a14.912 14.912 0 0 0 1.305 3.04Z" />
+                  </svg>
+                  <button onClick={handleScrollUp}>Scroll to Top</button>
+              </div>
+          }
+          </div>
+        </div>
+      ))}
+    </>
+  );
+});
 
-    {/* Category Content */}
-    <AnimatePresence>
-      {!error && (isSearching || searchParams) ? (
-        <motion.div
-          key="search-results"
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          exit={{ opacity: 0 , height:0}}
-          transition={{ duration: 0.4, ease: 'easeInOut' }}
-          className="overflow-hidden"
-        >
-          <div className="grid-search-view">
-            {!isSearchOpen && 
-            <>
-              <div className="grid-item-article-list bg-article-list border-l">
-                <ArticleList title={`Search results: ${articles.length}`} articles={!error ? articles : []}/> 
+CategoryPageGrid.displayName = 'CategoryPageGrid';
+
+
+
+
+
+
+
+
+
+
+const CategoryPage = memo(function CategoryPage({ category }: { category: string }) {
+  const { loading, error, data, isSearchOpen, isSearching, searchParams, refreshArticles } = useArticles();
+  const { source, topic } = usePage();
+  
+  const gridRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+
+  // const handleLoadMore = useCallback(async (e: React.MouseEvent) => {
+  //   e.preventDefault();    
+  //   refreshArticles({ source, topic, skip: 5 });
+  // }, [data?.articles.length]);
+
+
+  const handleLoadMore = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    
+    // 1. Freeze the current view
+    const currentScroll = window.scrollY;
+    const currentHeight = document.documentElement.scrollHeight;
+    
+    // 2. Load data
+    const currentArticleCount = data?.articles.length || 0;
+    refreshArticles({ source, topic, skip: currentArticleCount });
+    
+    // 3. Calculate how much content was added
+    setTimeout(() => {
+      const newHeight = document.documentElement.scrollHeight;
+      const addedHeight = newHeight - currentHeight;
+      
+      // 4. If significant content was added, scroll to show it
+      if (addedHeight > 200) {
+        const targetScroll = currentScroll + (addedHeight / 2); // Scroll to middle of new content
+        window.scrollTo({
+          top: targetScroll,
+          behavior: 'smooth'
+        });
+      }
+    }, 200);
+  }, [data?.articles.length, refreshArticles, source, topic]);
+
+
+  
+  if (error && error.statusCode !== 204) {
+    return <ErrorPage error={error} />;
+  }
+
+  return (
+    <div className="mx-auto bg-[var(--np-background)]">
+      {/* Search Component */}
+      <AnimatePresence>
+        {isSearchOpen && (
+          <motion.div
+            key="search-component"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.4, ease: 'easeInOut' }}
+            className="overflow-hidden"
+          >
+            <SearchComponent /> 
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Category Content */}
+      <AnimatePresence>
+        {!error && (isSearching || searchParams) ? (
+          <motion.div
+            key="search-results"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.4, ease: 'easeInOut' }}
+            className="overflow-hidden"
+          >
+            <div className="grid-search-view">
+              {!isSearchOpen && data && (
+                <>
+                  <div className="grid-item-article-list bg-article-list border-l">
+                    <ArticleList 
+                      title={`Search results: ${data.articles.length}`} 
+                      articles={data.articles}
+                    /> 
+                  </div>
+                  <div className="grid-item-foreground-block row-start-9">
+                    <WeatherBlock/>
+                  </div>
+                </>
+              )}
+              <div className="footer footer-front-page row-start-11 border-t-8">
+                <PageFooter/>
               </div>
-              <div className="grid-item-foreground-block row-start-9">
-                <WeatherBlock/>
-              </div>
-            </>}
-            <div className="footer footer-front-page row-start-11 border-t-8">
-              <PageFooter/>
             </div>
-          </div>
-        </motion.div>
-      ) : (
-        <motion.div
-          key="front-page"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.4, ease: 'easeInOut' }}
-          className="overflow-hidden"
-        >
-            <div className="grid-category-page min-h-[calc(100vh - 10rem)]">
-              <CategoryPageGrid articles={articles}/>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  </div>   
-);
-}
+          </motion.div>
+        ) : (
+          <>
+            <div className="min-h-[calc(100vh - 10rem)]">  
+              {data && data.total > 0 && (
+                <CategoryPageGrid 
+                  articles={data.articles} 
+                  total={data.total} 
+                  loading={loading}
+                  onLoadMore={handleLoadMore} 
+                  gridRefs={gridRefs}
+                />
+              )}
+               {loading && <progress className="progress w-full bottom-0 absolute hidden"></progress>}
+            </div> 
+          </>
+        )}
+      </AnimatePresence>
+    </div>   
+  );
+});
+
+CategoryPage.displayName = 'CategoryPage';
+export default CategoryPage;

@@ -1,8 +1,12 @@
 import { Article } from "@/types/article";
 import { ArticleTitle } from "./ArticleTitlte";
 import { ImageWrapper } from "../wrappers/ImageWrapper";
+import { useRouter } from "next/router";
 
 export const ArticleBlockTop = ({ article }: { article: Article }) => {
+  const router = useRouter();
+  const isArticleRoute = !!router.query.articleId;
+
   return (
     <>
       {article && 
@@ -19,9 +23,13 @@ export const ArticleBlockTop = ({ article }: { article: Article }) => {
           )}
           <div className="p-4">
             <div className="flex flex-col gap-2">  
+              {isArticleRoute ? <p className="text-gray-700 mb-4">
+                {article.content}
+              </p> :
               <p className="text-gray-700 mb-4">
                 {article.summary?.content}
               </p>
+              }
             </div>
           </div>
         </div>

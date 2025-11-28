@@ -4,7 +4,7 @@ import { Article, SearchParams } from '@/types/article';
 
 export const articlesService = {
 
-  async getArticles(source:string | null, skip: number = 0, limit: number = 100 ): Promise<ArticlesData> {
+  async getArticles(source:string | null, skip: number = 0, limit: number = 50 ): Promise<ArticlesData> {
     try {
       const config = source ? { params: { source, skip, limit } } : undefined;
       const response =  await apiClient.get<ApiResponse<ArticlesData>>('/articles/', config);
@@ -15,7 +15,7 @@ export const articlesService = {
     }
   },
 
-  async getArticlesByTopicId(topicId:string, source?:string, skip: number = 0, limit: number = 100): Promise<ArticlesData> {
+  async getArticlesByTopicId(topicId:string, source?:string, skip: number = 0, limit: number = 5): Promise<ArticlesData> {
     try {
       const config = source ? { params: { source, skip, limit } } : undefined;
       const response =  await apiClient.get<ApiResponse<ArticlesData>>(`/articles/topic/${encodeURIComponent(topicId)}`, config);

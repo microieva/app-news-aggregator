@@ -20,16 +20,19 @@ export const Header = () => {
     performSearch, 
     isSearching, 
     clearSearch, 
-    articles, 
+    data, 
     setIsSearchOpen, 
+    refreshArticles,
     searchParams, 
     isSearchOpen } = useArticles();
+
   const router = useRouter();
   const date = DateTime.now();
-  const [localSearchValue, setLocalSearchValue] = useState(searchParams?.title || '');
-  const [isTyping, setIsTyping] = useState(false);
+  const [localSearchValue, setLocalSearchValue] = useState<string>(searchParams?.title || '');
+  const [isTyping, setIsTyping] = useState<boolean>(false);
+  const [progress, setProgress] = useState<boolean>(false);
 
-  useEffect(() => {
+   useEffect(() => {
     setLocalSearchValue(searchParams?.title || '');
   }, [searchParams?.title]);
 
@@ -46,7 +49,7 @@ export const Header = () => {
     if (value === '') clearSearch();
     setLocalSearchValue(value);
     debouncedSearch(value);
-  };
+  }
 
   const handleCancelSearch = useCallback(() => {
     setLocalSearchValue('');
@@ -57,13 +60,19 @@ export const Header = () => {
 
   useEffect(()=> {
     if (source) refreshTopicsWithSource(source);
-  }, [source ])
+  }, [source]);
 
-  const handlePageChange = (topic:Topic, route:string) => {
-    setTopic(topic);
+  const handlePageChange = async (topic: Topic, route: string) => {  
     setIsSearchOpen(false);
-    router.push(`/${route}`);
+    setTopic(topic);
+    refreshArticles({topic, source});
+
+    //if (!loadingArticles) router.push(`/${route}`);
   }
+
+  useEffect(()=> {
+    if (!loadingArticles && topic) router.push(`/${topic.name}`);
+  }, [loadingArticles]);
 
   const toggle = ()=> {
     setIsSearchOpen(!isSearchOpen)
@@ -96,7 +105,7 @@ export const Header = () => {
                 href="/"
                 className="text-7xl font-bold hover:text-gray-600"
               >
-                <h1 className="font-primary h-full">News Aggregator</h1>
+                <h1 className="font-primary h-full">News From Earth</h1>
               </a>
             </div>
             
@@ -141,7 +150,7 @@ export const Header = () => {
                 <div 
                   role="tablist" 
                   className={clsx(
-                    'tabs tabs-lift tabs-lg flex whitespace-nowrap min-w-max space-x-[1px] tabs-no-border h-full transition-colors duration-200 hover:tab-active',
+                    'tabs tabs-lift tabs-lg flex whitespace-nowrap min-w-max space-x-[2px] tabs-no-border h-full transition-colors duration-200 hover:tab-active',
                     {
                       'text-[var(--np-color-primary)] ': !topic,
                       'group-hover/tablist:bg-[var(--np-color-primary)] group-hover/tablist:text-[var(--np-background)]': true
@@ -262,13 +271,13 @@ export const Header = () => {
                 {isTyping && <span>Typing...</span>}
                 {isSearching && !isTyping && <span>Searching for "{localSearchValue}"...</span>}
                 {searchParams && err && err.statusCode ===204 && !isTyping && <span>No articles found</span>}
-                {searchParams && !err && !isTyping && <span>Found articles: {articles.length}</span>}
+                {searchParams && !err && !isTyping && <span>Found articles: {data?.total}</span>}
               </div>
             </motion.div>
           </AnimatePresence>
         )}
       </header>
-      {loadingArticles && <progress className="progress w-full bottom-0 absolute"></progress>}
+      {loadingArticles && <progress className="progress w-full bottom-0 absolute hidden"></progress>}
     </div>
   );
   }    

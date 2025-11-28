@@ -1,10 +1,7 @@
 import { Article } from "@/types/article";
-import { useRouter } from "next/router";
 import { ArticleTitle } from "./ArticleTitlte";
 
 export const ArticleBlockBottom = ({ article }: { article: Article }) => {
-  const router = useRouter();
-  const route = router.pathname;
 
   return (
     <>
@@ -13,7 +10,7 @@ export const ArticleBlockBottom = ({ article }: { article: Article }) => {
           key={article.id }
           className="relative rounded-tl-md shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 h-full bg-[var(--np-background)] p-4"
         >
-          <div className="grid grid-cols-1 grid-rows-1 bg-[var(--np-background)] border-b border-[var(--np-color-primary)] pb-2 mb-4">
+          <div className="grid grid-cols-1 grid-rows-1 bg-[var(--np-background)] border-b border-[var(--np-color-primary)] pb-2 mb-4 text-2xl">
             <ArticleTitle article={article}/>
           </div>
           <div className="flex flex-row gap-8">

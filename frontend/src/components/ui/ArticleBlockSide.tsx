@@ -5,10 +5,9 @@ export const ArticleBlockSide = ({ article }: { article: Article }) => {
   
   return (
     <div 
-      //key={article.id }
       className="relative rounded-tl-md rounded-bl-md shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 h-full bg-[var(--np-background)] p-4"
     >
-      <div className="grid grid-cols-1 grid-rows-1 bg-[var(--np-background)] border-b border-[var(--np-color-primary)] pb-2 text-xl">
+      <div className="grid grid-cols-1 grid-rows-1 bg-[var(--np-background)] border-b border-[var(--np-color-primary)] pb-2 text-2xl">
         <ArticleTitle article={article}/>
       </div>
       {article?.image_url && (

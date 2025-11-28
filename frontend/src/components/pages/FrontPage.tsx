@@ -21,7 +21,7 @@ const GridFrontPage = ({articles}: {articles:Article[]}) => {
         <ArticleBlockSide article={articles[2]}/>
       </div>
       <div className="grid-item-article-list bg-article-list">
-        <ArticleList title="Other Top News" articles={articles}/> 
+        <ArticleList title="Other Top Stories" articles={articles}/> 
       </div>
       <div className="grid-item-article-block-top">
         <ArticleBlockTop article={articles.find(article => article.image_url !== article.url) || articles[0]}/>
@@ -43,7 +43,7 @@ const GridFrontPage = ({articles}: {articles:Article[]}) => {
 }
 
 export default function FrontPage(){
-  const {loading, error, articles, refreshArticles, isSearching, searchParams, isSearchOpen} = useArticles();
+  const {loading, error, data, refreshArticles, isSearching, searchParams, isSearchOpen} = useArticles();
   const { source } = usePage();
   
   useEffect(() => {
@@ -92,10 +92,10 @@ export default function FrontPage(){
               className="overflow-hidden"
             >
               <div className="grid-search-view">
-                {!isSearchOpen && 
+                {!isSearchOpen && data &&
                 <>
                   <div className="grid-item-article-list bg-article-list border-l">
-                    <ArticleList title={`Search results: ${articles.length}`} articles={!error ? articles : []}/> 
+                    <ArticleList title={`Search results: ${data.articles.length}`} articles={!error ? data.articles : []}/> 
                   </div>
                   <div className="grid-item-foreground-block row-start-9">
                     <WeatherBlock/>
@@ -118,7 +118,7 @@ export default function FrontPage(){
               <div className={clsx("grid-front-page", {
                 
               })}>
-                <GridFrontPage articles={articles}/>
+                {data && <GridFrontPage articles={data.articles}/>}
               </div>
             </motion.div>
           )}

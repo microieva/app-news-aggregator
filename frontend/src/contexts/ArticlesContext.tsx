@@ -1,18 +1,18 @@
 import useSWR from 'swr';
-import { createContext, useContext, ReactNode, useState } from 'react';
+import { createContext, useContext, ReactNode, useState, useMemo } from 'react';
 import { articlesService } from '@/services/articlesService';
-import { ApiError, ArticlesData, PageParams } from '@/types/api';
+import { ApiError, ArticlesData, RequestArgs } from '@/types/api';
 import { Article, SearchParams } from '@/types/article';
 import { Topic } from '@/types';
 
 interface ArticlesContextType {
-  articles: Article[];
+  data: ArticlesData | null;
   loading: boolean;
   error: ApiError | null;
   isSearching: boolean;
   searchParams: SearchParams | undefined;
   isSearchOpen: boolean;
-  refreshArticles: (args: PageParams) => Promise<void>;
+  refreshArticles: (args: RequestArgs) => Promise<void>;
   performSearch: (params: SearchParams) => Promise<void>;
   clearSearch: () => void;
   setIsSearchOpen: (bool:boolean) => void;
@@ -22,76 +22,85 @@ const ArticlesContext = createContext<ArticlesContextType | undefined>(undefined
 
 interface ArticlesProviderProps {
   children: ReactNode;
-  initialArticles?: Article[];
+  initialData?: ArticlesData;
 }
 
 const fetchers = {
-  getFrontPageArticles: async (): Promise<Article[]> => {
-    const data: ArticlesData = await articlesService.getFrontPageArticles();
-    return data.articles;
+  getFrontPageArticles: async (): Promise<ArticlesData> => {
+    return await articlesService.getFrontPageArticles();
   },
   
-  getArticles: async (source: string | null, topic: Topic | null): Promise<Article[]> => {
+  getArticles: async (source: string | null, topic: Topic | null, skip?:number): Promise<ArticlesData> => {
     let data: ArticlesData;
     
     if (topic) {
-      data = await articlesService.getArticlesByTopicId(topic.id, source as string);
+      data = await articlesService.getArticlesByTopicId(topic.id, source as string, skip);
     } else {
       data = await articlesService.getArticles(source);
     } 
+    return data;
     
-    return data.articles;
   },
 
-  searchArticles: async (searchParams: SearchParams): Promise<Article[]> => {
-    const data: ArticlesData = await articlesService.searchArticles(searchParams);
-    return data.articles;
+  searchArticles: async (searchParams: SearchParams): Promise<ArticlesData> => {
+    return await articlesService.searchArticles(searchParams);
   },
 };
 
 export function ArticlesProvider({ 
   children, 
-  initialArticles = [], 
+  //initialArticles = [], 
+  initialData
 }: ArticlesProviderProps) {
   const [manualError, setManualError] = useState<ApiError | null>(null);
   const [isSearching, setIsSearching] = useState<boolean>(false);
   const [searchParams, setSearchParams] = useState<SearchParams>();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const {
     data: articlesData,
     error: swrError,
-    mutate: mutateArticles,
-  } = useSWR<Article[], ApiError>(
+    mutate: mutateData,
+  } = useSWR<ArticlesData, ApiError>(
     'front-page-articles',
     fetchers.getFrontPageArticles,
     {
-      fallbackData: initialArticles,
+      fallbackData: initialData,
       revalidateOnFocus: false,
       shouldRetryOnError: (error) => error.statusCode !== 204,
     }
   );
 
-  const refreshArticles = async ({ source, topic }: { source: string | null; topic: Topic | null }) => {
+  const refreshArticles = async ({ source, topic, skip }: { source: string | null; topic: Topic | null, skip?:number }) => {
     setManualError(null);
     setIsSearching(false);
+    setLoading(true);
     setSearchParams(undefined);
     try {
-      if (source || topic) {
-        const filteredData = await fetchers.getArticles(source, topic);
-        mutateArticles(filteredData, false);
+      if (source || topic || skip) {
+        const filteredData = await fetchers.getArticles(source, topic, skip);
+        if (skip) {
+          const data = {...filteredData, articles: [...articlesData!.articles, ...filteredData.articles]}
+          mutateData(data, false)
+        } else {
+          mutateData(filteredData, false);
+        }
       } else {
-        mutateArticles();
+        mutateData();
       }
+      
     } catch (error) {
       const apiError = error as ApiError;
       
       if (apiError) {
-        mutateArticles([], false); 
+        mutateData(undefined, false); 
         setManualError(apiError);
       } else {
         throw error;
       }
+    }  finally {
+        setLoading(false)
     }
   };
 
@@ -102,22 +111,22 @@ export function ArticlesProvider({
     if (params) setSearchParams(params);
 
     try {
-      const searchResults = await fetchers.searchArticles(params);
+      const searchData = await fetchers.searchArticles(params);
       setIsSearching(false);
-      if (searchResults.length === 0) {
+      if (searchData.total === 0) {
         const apiError = {
           statusCode: 204,
           detail: "No results found"
         }
         setManualError(apiError);
       } else {
-        mutateArticles(searchResults, false);
+        mutateData(searchData, false);
       }
     } catch (error) {
       const apiError = error as ApiError;
       setIsSearching(false);
       if (apiError) {
-        mutateArticles([], false);
+        mutateData(undefined, false);
         setManualError(apiError);
       } else {
         console.error('Search failed:', error);
@@ -135,9 +144,9 @@ export function ArticlesProvider({
 
   const error = manualError || swrError;
 
-  const value: ArticlesContextType = {
-    articles: articlesData || [],
-    loading: !articlesData && !error,
+  const value: ArticlesContextType = useMemo(() => ({
+    data: articlesData || null,
+    loading,
     error: error || null,
     isSearching,
     searchParams: searchParams || undefined,
@@ -145,8 +154,8 @@ export function ArticlesProvider({
     isSearchOpen,
     refreshArticles,
     performSearch,
-    clearSearch,
-  };
+    clearSearch
+  }), [articlesData, loading, error]);
 
   return (
     <ArticlesContext.Provider value={value}>

@@ -8,19 +8,20 @@ import { Topic } from '@/types/topic';
 import { Article } from '@/types/article';
 import { WeatherProvider } from '@/contexts/WeatherContext';
 import '../styles/globals.css'
+import { ArticlesData } from '@/types';
 
 interface MyAppProps extends AppProps {
   initialSources: string[];
   initialTopics: Topic[];
-  initialArticles: Article[];
+  initialData: ArticlesData;
 }
 
-function App({ Component, pageProps, initialSources, initialTopics, initialArticles }: MyAppProps) {
+function App({ Component, pageProps, initialSources, initialTopics, initialData }: MyAppProps) {
   return (
     <WeatherProvider>
       <HeaderProvider initialSources={initialSources} initialTopics={initialTopics}>
         <PageProvider>
-          <ArticlesProvider initialArticles={initialArticles}>
+          <ArticlesProvider initialData={initialData}>
             <div className="app">
               <Header/>
               <main>

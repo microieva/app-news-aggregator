@@ -6,7 +6,7 @@ import clsx from "clsx";
 
 
 export const SearchComponent = () => {
-  const { isSearching, articles, loading, searchParams, error } = useArticles();
+  const { isSearching, data, loading, searchParams, error } = useArticles();
 
   return (
     <AnimatePresence>
@@ -47,7 +47,7 @@ export const SearchComponent = () => {
               )}
               
               {/* Results State */}
-              {!isSearching && searchParams && articles.length > 0 && (
+              {!isSearching && searchParams && data && data.total > 0 && (
                 <AnimatePresence>
                   <motion.div
                     initial={{ opacity: 0 }}
@@ -55,7 +55,7 @@ export const SearchComponent = () => {
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.5, ease: 'easeInOut' }}
                   >
-                    <ArticleList title={`Search results: ${articles.length}`} articles={!error ? articles : []}/>
+                    <ArticleList title={`Search results: ${data.total}`} articles={!error ? data.articles : []}/>
                   </motion.div>
                 </AnimatePresence>
               )}

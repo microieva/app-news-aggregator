@@ -59,8 +59,7 @@ export const CurrentWeather = ()=> {
           <p>{weather.current.humidity}%</p>
         </div>
       </div>
-      </>}
-      
+      </>}     
     </div>
   )
 }

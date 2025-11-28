@@ -16,9 +16,10 @@ export const ArticleList = ({title, articles}: {title:string, articles: Article[
           </a>
         </div>
         <div className=""><div className="divider w-full before:bg-gray-600 after:bg-gray-600"></div></div>
-        <div className="flex flex-row gap-2 ml-4 text-sm">
-          <p className="content-center text-gray-600">{formatDate(date)}</p>
-          <p className="content-center text-gray-700">{article.author}</p>
+        <div className="flex flex-row gap-2 ml-4">
+          <p className="content-center text-gray-600 text-xs">{formatDate(date)}</p>
+          <p className="content-center text-[var(--np-color-accent)] font-bold">|</p>
+          <p className="content-center text-gray-700 text-xs">{article.author}</p>
         </div>
       </div>
     );

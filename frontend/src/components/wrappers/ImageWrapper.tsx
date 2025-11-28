@@ -1,5 +1,3 @@
-import clsx from "clsx"
-
 export const ImageWrapper = ({url, title, classNames}:{url:string, title:string, classNames:string[]}) => {
   return (
      <div className={`bg-[var(--np-background)] aspect-[16/9] max-h-[50vh] overflow-hidden w-full ${classNames}`}>

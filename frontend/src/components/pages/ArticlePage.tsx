@@ -14,14 +14,14 @@ import { WeatherBlock } from "../ui/WeatherBlock";
 import { LoadingPage } from "./LoadingPage";
 
 const GridArticlePage = ({article}: { article:Article}) => {
-    const {articles} = useArticles();
+    const { data } = useArticles();
     return (
       <>
         <div className="grid-item-article-page-block">
           <ArticleBlockTop article={article}/>
         </div>
         <div className="grid-item-article-list bg-article-list">
-          <ArticleList articles={articles} title="Other Top News"/>
+          {data && <ArticleList articles={data.articles} title="Other Top Stories"/>}
         </div>
         <div className="col-span-2 row-span-1 col-start-9 row-start-5 bg-[var(--np-foreground)] border-t">
           <p>More details about source</p>
@@ -36,7 +36,7 @@ const GridArticlePage = ({article}: { article:Article}) => {
 
 export default function ArticlePage({ id }: ArticlePageProps) {
   const router = useRouter();
-  const {error, articles, isSearchOpen, isSearching, searchParams} = useArticles();
+  const {error, data, isSearchOpen, isSearching, searchParams} = useArticles();
 
   const [articleData, setArticleData] = useState<Article>();
   const [isLoading, setIsLoading] = useState(!id);
@@ -101,10 +101,10 @@ export default function ArticlePage({ id }: ArticlePageProps) {
             className="overflow-hidden"
           >
             <div className="grid-search-view">
-              {!isSearchOpen && 
+              {!isSearchOpen && data &&
               <>
                 <div className="grid-item-article-list bg-article-list border-l">
-                  <ArticleList title={`Search results: ${articles.length}`} articles={!error ? articles : []}/> 
+                  <ArticleList title={`Search results: ${data.articles.length}`} articles={!error ? data.articles : []}/> 
                 </div>
                 <div className="grid-item-foreground-block row-start-9">
                   <WeatherBlock/>

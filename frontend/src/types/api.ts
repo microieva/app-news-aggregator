@@ -44,7 +44,8 @@ export interface SearchData {
   topic_name?: string;
 }
 
-export interface PageParams {
+export interface RequestArgs {
   source: string | null;
   topic: Topic | null;
+  skip?:number;
 }

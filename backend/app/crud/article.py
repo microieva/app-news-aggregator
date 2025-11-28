@@ -9,6 +9,8 @@ from app.models import Topic, Article
 from app.schemas import ArticleCreate, SearchParams, TopicBase
 from app.core.exceptions import DatabaseException
 
+# TO DO :  debug creating !!!
+
 
 # async def create_article(db: AsyncSession, article: ArticleCreate) -> Article:
 #     """Create a new article - async version"""

@@ -17,12 +17,11 @@ export async function getStaticPaths() {
   }
 }
 
-export async function getStaticProps({ params }: { params: { id: string } }) {
+export async function getStaticProps({ params }: { params: { articleId: string } }) {
   return {
     props: {
-      id: params.id,
-    },
-    revalidate: 3600, 
+      id: params.articleId,
+    }
   };
 }
 
