@@ -19,7 +19,6 @@ const nextConfig: NextConfig = {
         },
       },
   },
-  scrollRestoration: false,
   // Enable React 19 features
   reactStrictMode: true,
   // Optional: Add basePath if deploying to subdirectory

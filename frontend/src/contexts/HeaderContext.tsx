@@ -1,3 +1,5 @@
+'use client'; 
+
 import { createContext, useContext, ReactNode } from 'react';
 import useSWR from 'swr';
 import { articlesService } from '@/services/articlesService';

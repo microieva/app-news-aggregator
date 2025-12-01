@@ -1,3 +1,5 @@
+'use client'; 
+
 import { useWeather } from "@/contexts/WeatherContext";
 import { getWeatherIcon } from "@/utils/utils";
 import { useEffect } from "react";

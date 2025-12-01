@@ -1,5 +1,7 @@
-import { useRouter } from "next/router"
-import { ApiError } from "@/types"
+"use client"
+
+import { useRouter } from "next/navigation";
+import { ApiError } from "@/types";
 import { AnimatedWrapper } from "../wrappers/AnimatedWrapper";
 
 export const ErrorPage = ({error}: {error:ApiError}) => {
@@ -11,7 +13,7 @@ export const ErrorPage = ({error}: {error:ApiError}) => {
         <div className="text-center content-center">
           <p>{error.statusCode} - {error.message}</p>
           <p><em>{error.detail}</em></p>
-          <div onClick={()=> router.reload()} className="hover:opacity-70 mt-10 text-gray-400 hover:cursor-pointer">
+          <div onClick={()=> router.refresh()} className="hover:opacity-70 mt-10 text-gray-400 hover:cursor-pointer">
             <p>Try refreshing the page..</p>
             <img 
               src="/refresh.svg"

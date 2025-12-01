@@ -1,4 +1,6 @@
-import { useRouter } from "next/router";
+'use client';
+
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { articlesService } from "@/services/articlesService";
 import { useArticles } from "@/contexts/ArticlesContext";
@@ -60,7 +62,7 @@ export default function ArticlePage({ id }: ArticlePageProps) {
 
  
 
-  if (router.isFallback || isLoading) {
+  if (isLoading) {
     return (
       <LoadingPage text="Loading article.."/>
     );

@@ -1,3 +1,5 @@
+'use client'; 
+
 import { createContext, useContext, ReactNode, useReducer } from 'react';
 import { Topic } from '@/types/topic';
 

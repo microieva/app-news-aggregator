@@ -1,12 +1,17 @@
+'use client'; 
+
 import { Article } from "@/types/article"
 import { formatDate } from "@/utils/utils";
-import { useRouter } from "next/router";
+import { useParams, usePathname, useRouter } from "next/navigation";
 
 export const ArticleTitle = ({ article }: { article: Article }) => {
   const router = useRouter();
-  const route = router.pathname;
   const date = article?.published_at || new Date().toISOString();
-  const isArticleRoute = !!router.query.articleId;
+  const pathname = usePathname(); 
+  const params = useParams(); 
+
+  const route = pathname;
+  const isArticleRoute = !!params.articleId;
 
   const ArticleInfo = () => {
     return (

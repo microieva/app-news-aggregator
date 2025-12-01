@@ -1,8 +1,10 @@
+'use client'; 
+
 import useSWR from 'swr';
 import { createContext, useContext, ReactNode, useState, useMemo } from 'react';
 import { articlesService } from '@/services/articlesService';
 import { ApiError, ArticlesData, RequestArgs } from '@/types/api';
-import { Article, SearchParams } from '@/types/article';
+import { SearchParams } from '@/types/article';
 import { Topic } from '@/types';
 
 interface ArticlesContextType {
@@ -49,7 +51,6 @@ const fetchers = {
 
 export function ArticlesProvider({ 
   children, 
-  //initialArticles = [], 
   initialData
 }: ArticlesProviderProps) {
   const [manualError, setManualError] = useState<ApiError | null>(null);

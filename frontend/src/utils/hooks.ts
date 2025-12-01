@@ -1,3 +1,5 @@
+'use client'; 
+
 import { useCallback, useRef } from 'react';
 
 export function useDebounce(callback: (...args: any[]) => void, delay: number) {

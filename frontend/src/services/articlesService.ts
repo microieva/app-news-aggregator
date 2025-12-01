@@ -4,9 +4,10 @@ import { Article, SearchParams } from '@/types/article';
 
 export const articlesService = {
 
-  async getArticles(source:string | null, skip: number = 0, limit: number = 50 ): Promise<ArticlesData> {
+  async getArticles(source:string | null, page: number = 1, pageSize: number = 50 ): Promise<ArticlesData> {
     try {
-      const config = source ? { params: { source, skip, limit } } : undefined;
+      const skip = (page - 1) * pageSize;
+      const config = source ? { params: { source, skip, limit:pageSize } } : undefined;
       const response =  await apiClient.get<ApiResponse<ArticlesData>>('/articles/', config);
       return response.data;
     } catch (error) {
@@ -15,9 +16,10 @@ export const articlesService = {
     }
   },
 
-  async getArticlesByTopicId(topicId:string, source?:string, skip: number = 0, limit: number = 5): Promise<ArticlesData> {
+  async getArticlesByTopicId(topicId:string, source?:string, page: number = 1, pageSize: number = 4): Promise<ArticlesData> {
     try {
-      const config = source ? { params: { source, skip, limit } } : undefined;
+      const skip = (page - 1) * pageSize;
+      const config = source ? { params: { source, skip, limit:pageSize } } : undefined;
       const response =  await apiClient.get<ApiResponse<ArticlesData>>(`/articles/topic/${encodeURIComponent(topicId)}`, config);
       return response.data;
     } catch (error) {

@@ -1,11 +1,13 @@
+'use client'; 
+
 import { Article } from "@/types/article";
 import { ArticleTitle } from "./ArticleTitlte";
 import { ImageWrapper } from "../wrappers/ImageWrapper";
-import { useRouter } from "next/router";
+import { useParams } from "next/navigation";
 
 export const ArticleBlockTop = ({ article }: { article: Article }) => {
-  const router = useRouter();
-  const isArticleRoute = !!router.query.articleId;
+  const params = useParams(); 
+  const isArticleRoute = !!params.articleId;
 
   return (
     <>

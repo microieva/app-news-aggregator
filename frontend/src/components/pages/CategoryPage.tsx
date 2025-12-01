@@ -1,8 +1,10 @@
-import { memo, useEffect, useRef, useCallback, useMemo, useState, useLayoutEffect, Suspense } from 'react';
+'use client';
+
+import { useEffect, useRef, useState} from 'react';
 import { useArticles } from '@/contexts/ArticlesContext';
 import { usePage } from '@/contexts/PageContext';
-import { AnimatePresence, motion, useScroll } from 'framer-motion';
-import { Article, Topic } from '@/types';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Article } from '@/types';
 import { ArticleList } from '../ui/ArticleList';
 import { PageFooter } from '../ui/PageFooter';
 import { SearchComponent } from '../ui/SearchComponent';
@@ -11,36 +13,28 @@ import { ErrorPage } from './ErrorPage';
 import { ArticleBlockBottom } from '../ui/ArticleBlockBottom';
 import { ArticleBlockSide } from '../ui/ArticleBlockSide';
 import { ArticleBlockTop } from '../ui/ArticleBlockTop';
-import { useRouter } from 'next/router';
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation';
 
-const CategoryPageGrid = memo(({ 
-  articles, 
-  total, 
-  loading, 
-  onLoadMore,
-  gridRefs 
-}: { 
-  articles: Article[], 
-  total: number, 
-  loading: boolean,
-  onLoadMore: (e: React.MouseEvent) => void,
-  gridRefs: React.MutableRefObject<(HTMLDivElement | null)[]>
-}) => {
-  const [hasMore, setHasMore] = useState<boolean>(false);
 
-  useEffect(() => {
-    setHasMore(total - articles.length >= 4);
-  }, [total, articles.length]);
 
-  const gridChunks = useMemo(() => {
-    const articlesPerGrid = 5;
-    const chunks = [];
+const CategoryPageGrid = ({ loadMore }:{ loadMore:()=>void }) => {
+  const { data, loading } = useArticles();
+  const articles = data?.articles || [];
+  const total = data?.total || 0;
+  const hasMore = articles.length < total;
+  const [gridChunks, setGridChunks] = useState<Article[][]>([]);
+  const gridRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+
+   useEffect(() => {
+    const articlesPerGrid = 4;
+    const newChunks = [];
     for (let i = 0; i < articles.length; i += articlesPerGrid) {
-      chunks.push(articles.slice(i, i + articlesPerGrid));
+      newChunks.push(articles.slice(i, i + articlesPerGrid));
     }
-    return chunks;
-  }, [articles]);
+    setGridChunks(newChunks);
+  }, [articles]); 
+
 
   const handleScrollUp = () => {
     window.scrollTo({
@@ -49,13 +43,15 @@ const CategoryPageGrid = memo(({
     }); 
   };
 
+  const remainingArticles = Math.max(0, total - articles.length);
+
   return (
     <>
       {gridChunks.map((chunkArticles, gridIndex) => (
         <div 
           key={`grid-${gridIndex}`}   
-          ref={el => { gridRefs.current[gridIndex] = el; }}
           className="grid-category-page"
+          ref={el => { gridRefs.current[gridIndex] = el; }}
         >
           {/* First Grid Cell - Article Block Side */}
           <div className="grid-item-article-block-side">
@@ -72,9 +68,7 @@ const CategoryPageGrid = memo(({
           
           {/* Third Grid Cell - Article Block Top */}
           <div className="grid-item-article-block-top" id="reviews">
-            <ArticleBlockTop article={
-              chunkArticles.find((article: Article) => article.image_url !== article.url) || chunkArticles[0]
-            }/>
+            <ArticleBlockTop article={chunkArticles[0]}/>
           </div>
           
           {/* Fourth Grid Cell - Article Block Bottom */}
@@ -89,15 +83,13 @@ const CategoryPageGrid = memo(({
           
           {/* Load More Button - Only show on the last grid */}
           <div className="grid-item-foreground-block row-start-9 text-center content-center">
-          {gridIndex === gridChunks.length - 1 && hasMore ? (
-              <button 
-                type="button"
-                onClick={onLoadMore}
-                disabled={loading}
-                className="border-b border-[var(--np-color-primary)] py-2 mx-auto font-bold mb-4 w-[50%] hover:text-gray-600 hover:border-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          {gridIndex === gridChunks.length - 1 && hasMore && remainingArticles > 0 ? 
+             <button
+                onClick={loadMore}
+                className="border-b border-[var(--np-color-primary)] py-2 mx-auto font-bold mb-4 w-[50%] hover:text-gray-600 hover:border-gray-600 transition-colors inline-block"
               >
-                {loading ? 'Loading...' : `View More Stories (${total - articles.length} remaining)`}
-              </button>)
+                {loading ? 'Loading...' : `View More Stories (${remainingArticles} remaining)`}
+              </button>
               :
               <div className="content-center h-full">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="m-auto h-16 text-[--np-background]">
@@ -111,61 +103,43 @@ const CategoryPageGrid = memo(({
       ))}
     </>
   );
-});
+};
 
 CategoryPageGrid.displayName = 'CategoryPageGrid';
 
 
+export const CategoryPageClient = ({ category }: {category:string}) => {
 
-
-
-
-
-
-
-
-const CategoryPage = memo(function CategoryPage({ category }: { category: string }) {
-  const { loading, error, data, isSearchOpen, isSearching, searchParams, refreshArticles } = useArticles();
+  const { error, data, isSearchOpen, isSearching, searchParams, refreshArticles } = useArticles();
   const { source, topic } = usePage();
+  const urlParams = useSearchParams();
+  const router = useRouter();
+  const currentPage = parseInt(urlParams.get('page') || '1');
+  const pageSize = 4;
   
-  const gridRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
 
-  // const handleLoadMore = useCallback(async (e: React.MouseEvent) => {
-  //   e.preventDefault();    
-  //   refreshArticles({ source, topic, skip: 5 });
-  // }, [data?.articles.length]);
+  const loadMore = () => {
+    if (isLoading) return;
+    setIsLoading(true);
+    const skip = (currentPage) * pageSize;
+    refreshArticles({ source, topic, skip }).then(() => {
+      router.push(`/${category.replace(/ /g, '-')}/?page=${currentPage + 1}`, {scroll: false});
+    }).finally(() => {
+      setIsLoading(false);
+      scrollView();
+    });
+  }
 
+  const scrollView = () => {
+    const gridElements = document.getElementsByClassName('grid-category-page');
+    if (gridElements.length > 0) {
+      const lastGridElement = gridElements[gridElements.length - 1] as HTMLElement;
+      lastGridElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
 
-  const handleLoadMore = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    
-    // 1. Freeze the current view
-    const currentScroll = window.scrollY;
-    const currentHeight = document.documentElement.scrollHeight;
-    
-    // 2. Load data
-    const currentArticleCount = data?.articles.length || 0;
-    refreshArticles({ source, topic, skip: currentArticleCount });
-    
-    // 3. Calculate how much content was added
-    setTimeout(() => {
-      const newHeight = document.documentElement.scrollHeight;
-      const addedHeight = newHeight - currentHeight;
-      
-      // 4. If significant content was added, scroll to show it
-      if (addedHeight > 200) {
-        const targetScroll = currentScroll + (addedHeight / 2); // Scroll to middle of new content
-        window.scrollTo({
-          top: targetScroll,
-          behavior: 'smooth'
-        });
-      }
-    }, 200);
-  }, [data?.articles.length, refreshArticles, source, topic]);
-
-
-  
   if (error && error.statusCode !== 204) {
     return <ErrorPage error={error} />;
   }
@@ -221,23 +195,12 @@ const CategoryPage = memo(function CategoryPage({ category }: { category: string
         ) : (
           <>
             <div className="min-h-[calc(100vh - 10rem)]">  
-              {data && data.total > 0 && (
-                <CategoryPageGrid 
-                  articles={data.articles} 
-                  total={data.total} 
-                  loading={loading}
-                  onLoadMore={handleLoadMore} 
-                  gridRefs={gridRefs}
-                />
-              )}
-               {loading && <progress className="progress w-full bottom-0 absolute hidden"></progress>}
+              {data && data.total > 0 && (<CategoryPageGrid loadMore={loadMore}/>)}
+              {isLoading && <progress className="progress w-full bottom-0 absolute hidden"></progress>}
             </div> 
           </>
         )}
       </AnimatePresence>
     </div>   
   );
-});
-
-CategoryPage.displayName = 'CategoryPage';
-export default CategoryPage;
+};

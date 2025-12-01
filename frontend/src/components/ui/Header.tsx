@@ -1,6 +1,8 @@
+'use client'; 
+
 import clsx from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
-import { useRouter } from 'next/router';
+import { usePathname, useRouter } from 'next/navigation';
 import { DateTime } from "luxon";
 import { useCallback, useEffect, useState } from "react";
 import { usePage } from "@/contexts/PageContext";
@@ -9,6 +11,7 @@ import { useArticles } from "@/contexts/ArticlesContext";
 import { useDebounce } from "@/utils/hooks";
 import { Dropdown } from "./Dropdown";
 import { Topic } from "@/types/topic";
+import Link from 'next/link';
 
 
 export const Header = () => { 
@@ -27,14 +30,16 @@ export const Header = () => {
     isSearchOpen } = useArticles();
 
   const router = useRouter();
-  const date = DateTime.now();
+  const pathname = usePathname();
+  const [currentDate, setCurrentDate] = useState<DateTime | null>(null);
   const [localSearchValue, setLocalSearchValue] = useState<string>(searchParams?.title || '');
   const [isTyping, setIsTyping] = useState<boolean>(false);
   const [progress, setProgress] = useState<boolean>(false);
 
    useEffect(() => {
     setLocalSearchValue(searchParams?.title || '');
-  }, [searchParams?.title]);
+    setCurrentDate(DateTime.now());
+  }, []);
 
   const [debouncedSearch, cancelDebouncedSearch] = useDebounce((query: string) => {
     setIsTyping(false);
@@ -66,7 +71,7 @@ export const Header = () => {
     setIsSearchOpen(false);
     setTopic(topic);
     refreshArticles({topic, source});
-
+    // router.push(`/${route}/?`);
     //if (!loadingArticles) router.push(`/${route}`);
   }
 
@@ -93,9 +98,9 @@ export const Header = () => {
                 </svg>
               <div className="flex flex-col px-4">
                 <p className="font-bold text-extrasmall"> 
-                  {date.toFormat('d MMM, yyyy')}
+                  {currentDate?.toFormat('d MMM, yyyy')}
                 </p>
-                <p className="text-gray-600 text-extrasmall">{date.toFormat('HH:mm a, cccc')}</p>
+                <p className="text-gray-600 text-extrasmall">{currentDate?.toFormat('HH:mm a, cccc')}</p>
 
               </div>
             </div>
@@ -159,11 +164,12 @@ export const Header = () => {
                 >
                   {topics?.map((t: Topic, i) => {
                     const route = t.name.replace(/ /g, '-');
-                    const isActive = router.asPath.endsWith(`/${route}/`);
+                    const isActive = pathname === `/${route}` || pathname.startsWith(`/${route}/`);
                     return (
-                      <button 
+                      <Link 
                         key={t.id}
                         role="tab" 
+                        href={`/${route}`}
                         onClick={() => handlePageChange(t, route)}
                         className={clsx(
                           'tab tab-lifted h-full flex-shrink-0 transition-colors hover:tab-active focus:tab-active',
@@ -175,7 +181,7 @@ export const Header = () => {
                         )}
                       >
                         {t.name}
-                      </button>  
+                      </Link>  
                     );
                   })}
                 </div> 

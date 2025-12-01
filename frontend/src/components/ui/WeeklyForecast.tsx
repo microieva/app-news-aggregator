@@ -1,3 +1,5 @@
+'use client'; 
+
 import React, { useEffect } from 'react';
 import { useWeather } from '@/contexts/WeatherContext';
 import { DailyForecast } from '@/types/weather';

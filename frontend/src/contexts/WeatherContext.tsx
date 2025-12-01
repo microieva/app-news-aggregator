@@ -1,3 +1,5 @@
+'use client'; 
+
 import { createContext, useContext, ReactNode } from 'react';
 import { weatherService } from '@/services/weatherService';
 import { ApiError } from '@/types/api';

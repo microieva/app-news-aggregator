@@ -139,7 +139,7 @@ async def read_articles_by_topic_id(
     topic_id: str,
     db: AsyncSession = Depends(get_db),
     skip: int = 0,
-    limit: int = 5,
+    limit: int = 4,
     source: Optional[str] = None   
 ):
     topic = await topic_crud.get_topic(db, topic_id=topic_id)
