@@ -23,3 +23,18 @@ export function useDebounce(callback: (...args: any[]) => void, delay: number) {
 
   return [debouncedFunction, cancel] as const;
 }
+
+export function useThrottle(callback: (...args: any[]) => void, delay: number) {
+  const lastCallRef = useRef<number>(0);
+
+  const throttledFunction = useCallback((...args: any[]) => {
+    const now = Date.now();
+
+    if (now - lastCallRef.current >= delay) {
+      lastCallRef.current = now;
+      callback(...args);
+    }
+  }, [callback, delay]);
+
+  return throttledFunction;
+}

@@ -13,7 +13,7 @@ export default async function HomePage() {
   );
 }
 
-// Optional: Generate metadata for SEO
+// SEO
 export const metadata = {
   title: 'News Aggregator - Latest Headlines',
   description: 'Your personalized news aggregator and summarizer',

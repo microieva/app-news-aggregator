@@ -13,8 +13,6 @@ import { WeatherBlock } from "../ui/WeatherBlock";
 import { SearchComponent } from "../ui/SearchComponent";
 import { ErrorPage } from "./ErrorPage";
 import { Article } from "@/types";
-import { LoadingPage } from "./LoadingPage";
-import clsx from "clsx";
 
 const GridFrontPage = ({articles}: {articles:Article[]}) => {
   return (
@@ -45,18 +43,12 @@ const GridFrontPage = ({articles}: {articles:Article[]}) => {
 }
 
 export default function FrontPage(){
-  const {loading, error, data, refreshArticles, isSearching, searchParams, isSearchOpen} = useArticles();
+  const {error, data, refreshArticles, isSearching, searchParams, isSearchOpen} = useArticles();
   const { source } = usePage();
   
   useEffect(() => {
     if (source) refreshArticles({source, topic:null});
   }, [source]);
-
-  if (loading) {
-    return (
-      <LoadingPage text="Loading front page stories.."/>
-    );
-  }
 
   if (error && error.statusCode !== 204) {
     return (
@@ -117,11 +109,10 @@ export default function FrontPage(){
               transition={{ duration: 0.4, ease: 'easeInOut' }}
               className="overflow-hidden"
             >
-              <div className={clsx("grid-front-page", {
-                
-              })}>
-                {data && <GridFrontPage articles={data.articles}/>}
-              </div>
+              {data && 
+                <div className="grid-front-page">
+                  <GridFrontPage articles={data.articles}/>
+                </div>}
             </motion.div>
           )}
         </AnimatePresence>

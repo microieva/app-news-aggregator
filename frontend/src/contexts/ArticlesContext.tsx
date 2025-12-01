@@ -145,7 +145,7 @@ export function ArticlesProvider({
 
   const error = manualError || swrError;
 
-  const value: ArticlesContextType = useMemo(() => ({
+  const value: ArticlesContextType ={
     data: articlesData || null,
     loading,
     error: error || null,
@@ -156,7 +156,7 @@ export function ArticlesProvider({
     refreshArticles,
     performSearch,
     clearSearch
-  }), [articlesData, loading, error]);
+  }
 
   return (
     <ArticlesContext.Provider value={value}>
