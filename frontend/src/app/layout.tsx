@@ -6,6 +6,7 @@ import { Header } from '@/components/ui/Header';
 import { Footer } from '@/components/ui/Footer';
 import { ArticlesProvider } from '@/contexts/ArticlesContext';
 import '@/app/styles/globals.css';
+import { HeadlinesProvider } from '@/contexts/HeadlinesContext';
 
 interface RootLayoutProps {
   children: ReactNode;
@@ -17,19 +18,21 @@ export default async function RootLayout({ children }: RootLayoutProps) {
     <html lang="en" data-theme="light">
       <body>
         <WeatherProvider>
-          <HeaderProvider >
-            <PageProvider>
+          <PageProvider>
+            <HeaderProvider>
               <ArticlesProvider>
-                <div className="app">
-                  <Header />
-                  <main>
-                    {children}
-                  </main>
-                  <Footer />
-                </div>
+                <HeadlinesProvider>
+                  <div className="app">
+                    <Header />
+                    <main>
+                      {children}
+                    </main>
+                    <Footer />
+                  </div>
+                </HeadlinesProvider>
               </ArticlesProvider>
-            </PageProvider>
-          </HeaderProvider>
+            </HeaderProvider>
+          </PageProvider>
         </WeatherProvider>
       </body>
     </html>

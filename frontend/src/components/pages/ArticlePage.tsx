@@ -14,32 +14,53 @@ import { AnimatePresence, motion } from "framer-motion";
 import { SearchComponent } from "../ui/SearchComponent";
 import { WeatherBlock } from "../ui/WeatherBlock";
 import { LoadingPage } from "./LoadingPage";
+import { formatDate } from "@/utils/utils";
 
 const GridArticlePage = ({article}: { article:Article}) => {
-    const { data } = useArticles();
-    return (
-      <>
-        <div className="grid-item-article-page-block">
-          <ArticleBlockTop article={article}/>
+
+  return (
+    <>
+      <div className="grid-item-article-page-block">
+        <ArticleBlockTop article={article}/>
+      </div>
+      <div className="grid-item-article-list bg-article-list">
+        <ArticleList title="Other Top Stories"/>
+      </div>
+      <div className="col-span-2 row-span-1 col-start-9 row-start-5 bg-[var(--np-foreground)] border-t flex flex-col font-secondary px-4 py-8 gap-8">
+        <div className="flex-1 flex flex-row w-full justify-center gap-12">
+          <div className="flex flex-row gap-3">
+            <div className="content-center">
+              <img src="/accent.png" className="h-[11px]"/>
+            </div>
+            <div>
+              <div className="font-bold text-xs text-gray-600">Source</div>
+              <div style={{lineHeight:'12px'}}>{article.source}</div>
+            </div>
+          </div>
+          <div className="flex flex-row gap-3">
+            <div className="content-center">
+              <img src="/accent.png" className="h-[11px]"/>
+            </div>
+            <div>
+              <div className="font-bold text-xs text-gray-600">Published</div>
+              <div style={{lineHeight:'12px'}}>{formatDate(article.published_at)}</div>
+            </div>
+          </div>
         </div>
-        <div className="grid-item-article-list bg-article-list">
-          {data && <ArticleList articles={data.articles} title="Other Top Stories"/>}
+        <div className="divider w-full before:bg-gray-600 after:bg-gray-600 my-0 before:h-[1px] after:h-[1px]"></div>
+        <div className="flex-1 font-bold text-xs text-gray-600 hover:cursor-pointer hover:opacity-70 w-full flex flex-row gap-2 justify-center">
+          <p className="self-center">Read Original Article</p>
+          <a className="text-gray-600 hover:cursor-pointer" href={article.url}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-redo-icon lucide-redo"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"/></svg>
+          </a>
         </div>
-        <div className="col-span-2 row-span-1 col-start-9 row-start-5 bg-[var(--np-foreground)] border-t">
-          <p>More details about source</p>
-          <p>link to original</p>
-          <p>content</p>
-          <p>-</p>
-          <p>-</p>
-        </div>
-      </>
-    )
-  }
+      </div>
+    </>
+  )
+}
 
 export default function ArticlePage({ id }: ArticlePageProps) {
-  const router = useRouter();
   const {error, data, isSearchOpen, isSearching, searchParams} = useArticles();
-
   const [articleData, setArticleData] = useState<Article>();
   const [isLoading, setIsLoading] = useState(!id);
   const [isError, setIsError] = useState<ApiError>();

@@ -21,7 +21,7 @@ const GridFrontPage = ({articles}: {articles:Article[]}) => {
         <ArticleBlockSide article={articles[2]}/>
       </div>
       <div className="grid-item-article-list bg-article-list">
-        <ArticleList title="Other Top Stories" articles={articles}/> 
+        <ArticleList title="Other Top Stories" /> 
       </div>
       <div className="grid-item-article-block-top">
         <ArticleBlockTop article={articles.find(article => article.image_url !== article.url) || articles[0]}/>
@@ -89,7 +89,7 @@ export default function FrontPage(){
                 {!isSearchOpen && data &&
                 <>
                   <div className="grid-item-article-list bg-article-list border-l">
-                    <ArticleList title={`Search results: ${data.articles.length}`} articles={!error ? data.articles : []}/> 
+                    <ArticleList title={`Search results: ${data.articles.length}`} /> 
                   </div>
                   <div className="grid-item-foreground-block row-start-9">
                     <WeatherBlock/>

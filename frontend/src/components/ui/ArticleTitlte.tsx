@@ -15,7 +15,7 @@ export const ArticleTitle = ({ article }: { article: Article }) => {
 
   const ArticleInfo = () => {
     return (
-    <div className="flex flex-row justify-start text-sm gap-2 h-min">
+      <div className="flex flex-row justify-start text-sm gap-2 h-min">
         <p 
           onClick={() => router.push(`/${route}`)}
           rel="noopener noreferrer"
@@ -29,7 +29,7 @@ export const ArticleTitle = ({ article }: { article: Article }) => {
         </p>
         <img src="/accent.png" className="h-[11px] m-auto"/>
         <p className=" text-gray-600">
-          {formatDate(date) || '-'}
+          {formatDate(date, false) || '-'}
         </p>
       </div>
     )

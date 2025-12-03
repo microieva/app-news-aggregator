@@ -92,3 +92,16 @@ class TaskStatusResponse(BaseModel):
 class ArticleWithSummaryStatus(ArticleBase):
     summary_status: Optional[dict] = None
     background_tasks: Optional[List[dict]] = None
+
+class Headline(BaseModel):
+    id: int
+    title: str
+    source: str
+    published_at: Optional[datetime] = None
+    author: Optional[str] = None
+    
+    model_config = ConfigDict(from_attributes=True)
+
+class HeadlineList(BaseModel):  
+    headlines: List[Headline]
+    total: int

@@ -1,10 +1,11 @@
 'use client';
 
+import clsx from 'clsx';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState} from 'react';
 import { useArticles } from '@/contexts/ArticlesContext';
 import { usePage } from '@/contexts/PageContext';
-import { AnimatePresence, motion } from 'framer-motion';
-import { Article } from '@/types';
 import { ArticleList } from '../ui/ArticleList';
 import { PageFooter } from '../ui/PageFooter';
 import { SearchComponent } from '../ui/SearchComponent';
@@ -13,8 +14,7 @@ import { ErrorPage } from './ErrorPage';
 import { ArticleBlockBottom } from '../ui/ArticleBlockBottom';
 import { ArticleBlockSide } from '../ui/ArticleBlockSide';
 import { ArticleBlockTop } from '../ui/ArticleBlockTop';
-import { useRouter, useSearchParams } from 'next/navigation';
-import clsx from 'clsx';
+import { Article } from '@/types';
 
 
 
@@ -62,8 +62,7 @@ const CategoryPageGrid = ({ loadMore }:{ loadMore:()=>void }) => {
           {/* Second Grid Cell - Article List */}
           {gridIndex === 0 && <div className="grid-item-article-list bg-article-list">
             <ArticleList 
-              title={gridIndex === 0 ? "Other Top Stories" : `More Stories ${gridIndex + 1}`} 
-              articles={chunkArticles}
+              title="Other Top Stories"
             /> 
           </div>}
           
@@ -180,7 +179,6 @@ export const CategoryPageClient = ({ category }: {category:string}) => {
                   <div className="grid-item-article-list bg-article-list border-l">
                     <ArticleList 
                       title={`Search results: ${data.articles.length}`} 
-                      articles={data.articles}
                     /> 
                   </div>
                   <div className="grid-item-foreground-block row-start-9">

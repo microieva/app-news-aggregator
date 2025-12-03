@@ -4,7 +4,7 @@ from .topic import (
 )
 from .article import (
     get_article_by_id, get_articles, get_article_by_url, mark_article_processed, get_used_sources,
-    create_article, get_articles_by_ids, count_articles, mark_article_failed,
+    create_article, get_articles_by_ids, count_articles, mark_article_failed, get_headlines,
     search_articles, get_articles_by_topic_id, count_articles_by_topic_id
 )
 from .summary import (
@@ -19,7 +19,7 @@ __all__ = [
     
     "get_article_by_id", "get_articles_by_topic_id", "get_articles","mark_article_failed","get_used_sources",
     "create_article", "get_articles_by_ids","get_article_by_url","mark_article_processed","search_articles",
-    "count_articles_by_topic_id", "count_articles", "get_articles_by_topic_id",
+    "count_articles_by_topic_id", "count_articles", "get_articles_by_topic_id", "get_headlines",
     
     "get_summary", "get_summaries_with_articles", "get_summaries_by_topic",
     "get_summary_with_article_details", "bulk_create_summaries",

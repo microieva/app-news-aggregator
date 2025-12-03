@@ -1,5 +1,5 @@
 from .topic import TopicBase, TopicCreate, TopicUpdate, TopicWithArticles, TopicList
-from .article import ArticleBase, ArticleCreate, ArticleUpdate, ArticleList, ArticleProcessingStatus, BulkProcessingResult, TaskStatusResponse, ArticleWithSummaryStatus
+from .article import ArticleBase, ArticleCreate, ArticleUpdate, ArticleList, ArticleProcessingStatus, BulkProcessingResult, TaskStatusResponse, ArticleWithSummaryStatus, Headline, HeadlineList
 from .summary import SummaryBase, SummaryCreate, SummaryUpdate, SummaryWithArticle, SummarizeRequest, SummarizeResponse, BackgroundSummarizeResponse
 from .api import ApiResponse, SearchParams, ErrorCode, ApiError, ValidationErrorDetail, ValidationErrorResponse
 from .weather import WeatherCondition, WeatherResponse, CurrentWeather, AirQuality, Location, WeeklyForecastResponse, ForecastDay, ForecastResponse, DailyForecast
@@ -13,7 +13,6 @@ __all__ = [
     "ArticleBase",
     "ArticleCreate",
     "ArticleUpdate",
-    # "ArticleWithSummary",
     "ArticleList",
     "TaskStatusResponse",
     "ArticleWithSummaryStatus",
@@ -40,5 +39,7 @@ __all__ = [
     "ErrorCode",
     "ApiError",
     "ValidationErrorDetail",
-    "ValidationErrorResponse"
+    "ValidationErrorResponse",
+    "Headline",
+    "HeadlineList"
 ]

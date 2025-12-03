@@ -22,9 +22,13 @@
     @apply text-[var(--np-color-primary)] ;
   }
 
-  .tab-active, .tab-active:hover .tab-active:focus {
-    @apply [--tab-bg:var(--np-background)] text-[var(--np-color-primary)]; 
+  .tab-active, .tab-active:hover, .tab-active:focus {
+    @apply [--tab-bg:var(--np-background)] [--tab-color:var(--np-color-primary)];
+
     border: var(--np-background); 
+  }
+  .tabs.tabs-lift:has(.tab-active) .tab:not(.tab-active){
+    @apply text-[var(--np-background)]; 
   }
 
   .tabs.tabs-lift:has(.tab-active) .tab:not(.tab-active){
@@ -41,11 +45,17 @@
     @apply text-[var(--np-color-primary)] !important;
   } 
   .tab-lifted.tab-active {
-    @apply [--tab-border-color:var(--np-color-primary)] ;
+    @apply [--tab-border-color:var(--np-color-primary)];
+  }
+  .tab.tab-active {
+    @apply mx-[1px];
   }
   .tab-lifted:not(.tab-active):hover {
     @apply z-50;
   }
+  .tab:not(.tab-active) {
+     @apply border-x;
+  } 
   .label-text, .label-text-alt{
     @apply text-[var(--np-color-primary)];
   }

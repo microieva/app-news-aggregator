@@ -19,7 +19,7 @@ export const WeeklyForecast = () => {
           {forecast?.forecast?.map((day:DailyForecast, index:any) => (
               <div key={index} className="grid grid-cols-[20%_80%] grid-rows-[0.8rem]">
                 <div className="text-sm">
-                  <p className="text-gray-600">{index === 0 ? 'Today' : formatDate(day.date)}</p>
+                  <p className="text-gray-600">{index === 0 ? 'Today' : formatDate(day.date, false)}</p>
                   <p className="text-gray-600 text-xs">{getWeekday(day.date)}</p>
                 </div>
                 <div className="pl-4 font-bold text-sm">

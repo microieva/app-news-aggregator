@@ -21,9 +21,9 @@ export const isApiError = (error: unknown): error is ApiError => {
   );
 };
 
-export const formatDate = (date:string):string => {
+export const formatDate = (date:string, bool:boolean = true):string => {
   const str = DateTime.fromISO(date)
-  return str.toFormat('d MMM')
+  return str.toFormat(`d MMM${bool ? ', yyyy' : ''}`)
 }
 
 export const getWeekday = (date:string):string => {

@@ -27,6 +27,10 @@ export interface ArticlesData {
   total: number;
   topic_name?: string;
 }
+export interface HeadlinesData {
+  headlines: Partial<Article>[]
+  total: number;
+}
 
 export interface SourcesData {
   sources:string[];

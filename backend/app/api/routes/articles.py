@@ -4,7 +4,7 @@ from typing import Optional
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.core import get_db, DatabaseException, ValidationException, NotFoundException
-from app.schemas import ArticleBase, ArticleList, ApiResponse, SearchParams, TopicBase
+from app.schemas import ArticleBase, ArticleList, ApiResponse, SearchParams, TopicBase, HeadlineList
 from app.crud import article as article_crud
 from app.crud import topic as topic_crud
 
@@ -204,4 +204,36 @@ async def read_article(
             context={"article_id": article_id}
         )
 
- 
+@router.get("/headlines", response_model=ApiResponse)
+async def read_headlines(
+    db: AsyncSession = Depends(get_db),
+    skip: int = 0,
+    limit: int = 50
+) -> ApiResponse:
+    try:   
+        headlines = await article_crud.get_headlines(
+            db=db, 
+            skip=skip, 
+            limit=limit
+        )
+        
+        total = await article_crud.count_articles(db)
+        
+        api_response = HeadlineList(
+            headlines=headlines,
+            total=total
+        )
+        return ApiResponse(data=api_response)
+        
+    except ValidationException:
+        # Re-raise validation exceptions as they're already properly formatted
+        raise
+        
+    except SQLAlchemyError as e:
+        raise DatabaseException(
+            detail="Failed to retrieve articles due to database error"
+        )
+    except Exception as e:
+        raise DatabaseException(
+            detail="Failed to retrieve articles"
+        )

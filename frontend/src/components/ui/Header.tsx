@@ -171,46 +171,45 @@ export const Header = () => {
       <header className="border-b">
         <GridHeaderTop />
         <div className="grid-header-bottom">
-          <div className="row-start-1 col-start-1 flex items-center bg-[var(--np-background)] rounded-br-md z-50">
+          <div className="row-start-1 col-start-1 flex items-center bg-[var(--np-background)] rounded-br-md">
             <Dropdown options={sources} />
           </div>
           <div className="row-start-1 col-start-2 rounded-bl-md rounded-tr-md bg-[var(--np-background)] overflow-hidden">
             <div className="group/tablist relative overflow-x-auto scrollbar-hide h-full">
-                <div 
-                  role="tablist" 
-                  className={clsx(
-                    'tabs tabs-lift tabs-lg flex whitespace-nowrap min-w-max space-x-[2px] tabs-no-border h-full transition-colors duration-200 hover:tab-active',
-                    {
-                      'text-[var(--np-color-primary)] ': !topic,
-                      'group-hover/tablist:bg-[var(--np-color-primary)] group-hover/tablist:text-[var(--np-background)]': true
-                    }
-                  )}
-                >
-                  {topics?.map((t: Topic, i) => {
-                    const route = t.name.replace(/ /g, '-');
-                    const isActive = pathname === `/${route}` || pathname.startsWith(`/${route}/`);
-                    return (
-                      <Link 
-                        key={t.id}
-                        role="tab" 
-                        href={`/${route}`}
-                        onClick={() => handlePageChange(t, route)}
-                        className={clsx(
-                          'tab tab-lifted h-full flex-shrink-0 transition-colors hover:tab-active focus:tab-active',
-                          {
-                            'tab-active bg-[var(--np-color-primary)] text-[var(--np-background)] active:tab-active': isActive,
-                            'group-hover/tablist:text-[var(--np-background)]': !isActive,
-                            'text-[var(--np-color-primary)] hover:bg-[var(--np-color-primary)] hover:text-[var(--np-background)]': !isActive && !topic
-                          }
-                        )}
-                      >
-                        {t.name}
-                      </Link>  
-                    );
-                  })}
-                </div> 
-                
-            </div>
+              <div 
+                role="tablist" 
+                className={clsx(
+                  'tabs tabs-lift tabs-lg flex whitespace-nowrap h-full transition-colors duration-200 tabs-no-border',
+                  {
+                    'text-[var(--np-color-primary)]': !topic,
+                    'group-hover/tablist:bg-[var(--np-color-primary)] group-hover/tablist:text-[var(--np-background)]': true
+                  }
+                )}
+              >
+                {topics?.map((t: Topic, i) => {
+                  const route = t.name.replace(/ /g, '-');
+                  const isActive = pathname === `/${route}` || pathname.startsWith(`/${route}/`);
+                  return (
+                    <Link 
+                      key={t.id}
+                      role="tab" 
+                      href={`/${route}`}
+                      onClick={() => handlePageChange(t, route)}
+                      className={clsx(
+                        'tab tab-lifted h-full flex-shrink-0 transition-colors hover:bg-[var(--np-background)] hover:z-50',
+                        {
+                          'tab-active bg-[var(--np-color-primary)] text-[var(--np-background) z-50': isActive,
+                          'group-hover/tablist:text-[var(--np-background)]': !isActive,
+                          'text-[var(--np-color-primary)] hover:bg-[var(--np-color-primary)] hover:tab-active': !isActive && !topic
+                        }
+                      )}
+                    >
+                      {t.name}
+                    </Link>  
+                  );
+                })}
+              </div>
+            </div> 
           </div> 
 
           {/* Search Section */}

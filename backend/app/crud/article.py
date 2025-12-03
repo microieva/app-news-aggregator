@@ -1,12 +1,12 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import Any, List, Optional
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, load_only
 
 from app.models import Topic, Article
-from app.schemas import ArticleCreate, SearchParams, TopicBase
+from app.schemas import ArticleCreate, SearchParams, TopicBase, Headline
 from app.core.exceptions import DatabaseException
 
 # TO DO :  debug creating !!!
@@ -388,3 +388,43 @@ async def count_articles_by_topic_id(
         
     except Exception as e:
         raise
+
+
+async def get_headlines(
+    db: AsyncSession, 
+    skip: int = 0, 
+    limit: int = 50
+) -> List[Headline]:
+    try:
+        query = (
+            select(Article)
+            .where(Article.is_processed == True)  
+            .offset(skip)
+            .limit(limit)
+            .order_by(Article.created_at.desc())
+            .options(
+                load_only(
+                    Article.id,
+                    Article.source,
+                    Article.title,
+                    Article.published_at,
+                    Article.author
+                )
+            )
+        )
+        
+        result = await db.execute(query)
+        data = result.scalars().all()  
+        headlines = [
+            Headline.model_validate(article) 
+            for article in data
+        ]
+        
+        return headlines
+        
+    except SQLAlchemyError as e:
+        raise
+        
+    except Exception as e:
+        raise
+

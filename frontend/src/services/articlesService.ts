@@ -1,5 +1,5 @@
 import { apiClient } from '@/utils/client';
-import { ApiResponse, ArticlesData, SearchData, SourcesData } from '@/types/api';
+import { ApiResponse, ArticlesData, HeadlinesData, SearchData, SourcesData } from '@/types/api';
 import { Article, SearchParams } from '@/types/article';
 
 export const articlesService = {
@@ -73,6 +73,18 @@ export const articlesService = {
       return repsonse.data;
     } catch (error) {
       console.error('Error searching articles:', error);
+      throw error;
+    }
+  },
+
+    async getHeadlines(page: number = 1, pageSize: number = 50 ): Promise<HeadlinesData> {
+    try {
+      const skip = (page - 1) * pageSize;
+      const config = { params: { skip, limit:pageSize } };
+      const response =  await apiClient.get<ApiResponse<HeadlinesData>>('/articles/headlines', config);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching headlines:', error);
       throw error;
     }
   }

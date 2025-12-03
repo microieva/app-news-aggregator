@@ -9,7 +9,7 @@ from app.crud import topic as topic_crud
 
 router = APIRouter()
 
-@router.get("/used", response_model=ApiResponse)
+@router.get("/", response_model=ApiResponse)
 async def read_used_topics(
     db: AsyncSession = Depends(get_db),
     skip: int = 0,
