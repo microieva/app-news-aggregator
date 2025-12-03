@@ -32,10 +32,6 @@ export interface HeadlinesData {
   total: number;
 }
 
-export interface SourcesData {
-  sources:string[];
-  topic_name?: string;
-}
 
 export interface TopicsData {
   topics: Topic[];

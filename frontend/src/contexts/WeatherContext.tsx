@@ -72,11 +72,9 @@ export function WeatherProvider({
     {
       fallbackData: initialForecast, 
       revalidateOnFocus: false,
-      dedupingInterval: 3600000, // 1 hour for forecast
-      refreshInterval: 3600000,
       onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
-        if (error.status === 404 || error.status === 500) return;
-        setTimeout(() => revalidate({ retryCount }), 5000);
+        if (error.status === 404 || error.status === 500) {
+        setTimeout(() => revalidate({ retryCount }), 5000);}
       },
     }
   );
@@ -92,11 +90,9 @@ export function WeatherProvider({
     {
       fallbackData: initialWeather,
       revalidateOnFocus: false,
-      // dedupingInterval: 300000, // 5 minutes
-      // refreshInterval: 300000,
       onErrorRetry: (error, key, config, revalidate, { retryCount }) => {
-        if (error.status === 404 || error.status === 500) return;
-        setTimeout(() => revalidate({ retryCount }), 5000);
+        if (error.status === 404 || error.status === 500) {
+        setTimeout(() => revalidate({ retryCount }), 5000);}
       },
     }
   );

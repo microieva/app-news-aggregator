@@ -67,7 +67,7 @@ export default function FrontPage(){
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.4, ease: 'easeInOut' }}
-              className="overflow-hidden"
+              //className="overflow-hidden"
             >
               <SearchComponent /> 
             </motion.div>
@@ -83,7 +83,7 @@ export default function FrontPage(){
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0 , height:0}}
               transition={{ duration: 0.4, ease: 'easeInOut' }}
-              className="overflow-hidden"
+              //className="overflow-hidden"
             >
               <div className="grid-search-view">
                 {!isSearchOpen && data &&
@@ -107,7 +107,7 @@ export default function FrontPage(){
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.4, ease: 'easeInOut' }}
-              className="overflow-hidden"
+              //className="overflow-hidden"
             >
               {data && 
                 <div className="grid-front-page">

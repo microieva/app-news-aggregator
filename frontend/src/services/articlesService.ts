@@ -1,5 +1,5 @@
 import { apiClient } from '@/utils/client';
-import { ApiResponse, ArticlesData, HeadlinesData, SearchData, SourcesData } from '@/types/api';
+import { ApiResponse, ArticlesData, HeadlinesData, SearchData } from '@/types/api';
 import { Article, SearchParams } from '@/types/article';
 
 export const articlesService = {
@@ -49,9 +49,9 @@ export const articlesService = {
     }
   },
 
-  async getUsedSources(): Promise<SourcesData> {
+  async getUsedSources(): Promise<string[]> {
     try {
-      const repsonse =  await apiClient.get<ApiResponse<SourcesData>>(`/articles/sources`);
+      const repsonse =  await apiClient.get<ApiResponse<string[]>>(`/articles/sources`);
       return repsonse.data;
     } catch (error) {
       console.error('Error fetching used sources:', error);

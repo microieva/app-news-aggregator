@@ -96,7 +96,7 @@
 
 @layer layout {
   .app {
-    @apply min-h-screen bg-[var(--np-background)] relative;
+    @apply min-h-screen bg-[var(--np-background)] relative max-w-[1600px] mx-auto;
   }
   .page {
     @apply px-4 py-8 min-h-screen bg-[var(--np-background)];
@@ -177,7 +177,6 @@
 }
 
 html, body {
-  background-color: var(--np-background);
   color: var(--np-color-primary);
 }
 
@@ -205,13 +204,16 @@ footer {
 .frontpage .grid-row-bottom {
   max-height: 25vh;
 }
+.menu {
+  z-index: 100;
+}
 
 .header h1,
 .footer h1 {
   font-weight: 900;
 }
-/* .progress {
+.progress {
   --progress-color: var(--np-color-accent)!important;
   border-radius: none;
-} */
+}
 

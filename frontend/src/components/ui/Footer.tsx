@@ -11,7 +11,7 @@ export const Footer = () => {
           </a>
         </div>
         <div className="bg-[var(--np-background)] rounded-tl-md flex flex-row p-2 justify-end">
-          <p className="content-center">&copy; {new Date().getFullYear()} News Aggregator. All rights reserved.</p>
+          <p className="content-center">&copy; {new Date().getFullYear()} News Aggregator. Ieva Vyliaudaite.</p>
         </div>
       </div>
 

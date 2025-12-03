@@ -4,7 +4,7 @@ import { createContext, useContext, ReactNode } from 'react';
 import useSWR from 'swr';
 import { articlesService } from '@/services/articlesService';
 import { topicsService } from '@/services/topicsService';
-import { ApiError, SourcesData, TopicsData } from '@/types/api';
+import { ApiError, TopicsData } from '@/types/api';
 import { Topic } from '@/types/topic';
 
 interface HeaderContextType {
@@ -26,8 +26,7 @@ interface HeaderProviderProps {
 
 const fetchers = {
   getSources: async (): Promise<string[]> => {
-    const data: SourcesData = await articlesService.getUsedSources();
-    return data.sources;
+    return await articlesService.getUsedSources();
   },
   getTopics: async (): Promise<Topic[]> => {
     const data: TopicsData = await topicsService.getUsedTopics();
@@ -54,9 +53,7 @@ export function HeaderProvider({
     fetchers.getSources,
     {
       fallbackData: initialSources,
-      revalidateOnFocus: false,
-      dedupingInterval: 300000, // 5 minutes
-      refreshInterval: 3600000, // 1 hour
+      revalidateOnFocus: false
     }
   );
 
@@ -69,9 +66,7 @@ export function HeaderProvider({
     fetchers.getTopics,
     {
       fallbackData: initialTopics,
-      revalidateOnFocus: false,
-      // dedupingInterval: 300000, // 5 minutes
-      // refreshInterval: 1800000, // 30 minutes
+      revalidateOnFocus: false
     }
   );
 
@@ -82,7 +77,7 @@ export function HeaderProvider({
    const refreshTopicsWithSource = async (source: string | null) => {
     if (source) {
       const filteredTopics = await fetchers.getTopicsBySource(source);
-      mutateTopics(filteredTopics, false); // don't revalidate
+      mutateTopics(filteredTopics, false); 
     } else {
       mutateTopics();
     }
