@@ -43,23 +43,23 @@ const GridArticlePage = ({article}: { article:Article}) => {
           font-secondary 
           px-4 py-8 gap-8"
         >
-        <div className="flex-1 flex flex-row w-full justify-center gap-12">
-          <div className="flex flex-row gap-3">
+        <div className="flex-1 flex flex-row w-full justify-center gap-4 md:gap-12">
+          <div className="flex flex-row gap-2 md:gap-3">
             <div className="content-center">
-              <img src="/accent.png" className="h-8 lg:h-[11px]"/>
+              <img src="/accent.png" className="h-4 w-auto md:h-8 lg:h-[11px]"/>
             </div>
-            <div className="content-center">
-              <div className="font-bold text-xs text-secondary">Source</div>
-              <div style={{lineHeight:'12px'}}>{article.source}</div>
+            <div className="content-center text-xs md:text-sm flex-shrink-0">
+              <p className="font-bold text-secondary lg:text-xs">Source</p>
+              <p className="lg:pt-2">{article.source}</p>
             </div>
           </div>
-          <div className="flex flex-row gap-3">
+          <div className="flex flex-row gap-2 md:gap-3">
             <div className="content-center">
-              <img src="/accent.png" className="h-8 lg:h-[11px]"/>
+              <img src="/accent.png" className="h-4 w-auto md:h-8 lg:h-[11px]"/>
             </div>
-            <div className="content-center">
-              <div className="font-bold text-xs text-secondary">Published</div>
-              <div style={{lineHeight:'12px'}}>{formatDate(article.published_at)}</div>
+            <div className="content-center text-xs md:text-sm flex-shrink-0">
+              <p className="font-bold text-secondary lg:text-xs">Published</p>
+              <p className="lg:pt-2">{formatDate(article.published_at)}</p>
             </div>
           </div>
         </div>

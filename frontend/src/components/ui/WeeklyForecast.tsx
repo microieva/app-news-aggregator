@@ -10,8 +10,7 @@ export const WeeklyForecast = () => {
   
   useEffect(()=>{
     refreshForecast();
-    console.log('FORECAST: ', forecast)
-  }, [])
+  }, [forecast])
 
   return (
       <div className='pl-2 md:pl-4'>

@@ -48,7 +48,7 @@ const CategoryPageGrid = ({ loadMore }:{ loadMore:()=>void }) => {
   const GridLayout = ({chunkArticles, gridIndex}:{chunkArticles:Article[], gridIndex:number}) => {
     return (
       <>
-        <div className="grid-item-article-block-side">
+        <div className={clsx("grid-item-article-block-side", {"row-start-1 col-start-7 col-span-4": gridIndex!==0})}>
           {chunkArticles[2] && <ArticleBlockSide article={chunkArticles[2]}/>}
         </div>
         
@@ -58,7 +58,7 @@ const CategoryPageGrid = ({ loadMore }:{ loadMore:()=>void }) => {
           </div>
         </div>}
         
-        <div className="col-span-5 row-span-1 col-start-4 row-start-1">
+        <div className={clsx("row-span-1 row-start-1", {"col-span-5 col-start-4":gridIndex===0}, {"col-span-6 col-start-1": gridIndex!==0})}>
           <ArticleBlockTop article={chunkArticles[0]}/>
         </div>
         

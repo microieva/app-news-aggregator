@@ -16,20 +16,21 @@ export const ArticleTitle = ({ article }: { article: Article }) => {
   const ArticleInfo = () => {
     return (
       <div className="flex flex-row justify-start text-xs gap-2 h-min">
-        <p 
-          onClick={() => router.push(`/${route}`)}
-          rel="noopener noreferrer"
-          className="hover:underline cursor-pointer text-secondary"
-        >
-          {article.topic?.name} 
+        <p className=" text-secondary">
+          {formatDate(date, false) || '-'}
         </p>
         <img src="/accent.png" className="h-[11px] m-auto"/>
         <p className=" text-secondary">
           {article.author || '-'}
         </p>
         <img src="/accent.png" className="h-[11px] m-auto"/>
-        <p className=" text-secondary">
-          {formatDate(date, false) || '-'}
+        
+         <p 
+          onClick={() => router.push(`/${route}`)}
+          rel="noopener noreferrer"
+          className="hover:underline cursor-pointer text-secondary"
+        >
+          {article.topic?.name} 
         </p>
       </div>
     )

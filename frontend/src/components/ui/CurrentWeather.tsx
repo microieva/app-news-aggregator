@@ -20,7 +20,7 @@ export const CurrentWeather = ()=> {
       </div>
       {weather && 
       <>
-        <div>
+        <div className="lg:mt-8">
           <img 
             src={getWeatherIcon(weather.current.condition.code, weather.current.is_day)}
             alt={weather.current.condition.text}
