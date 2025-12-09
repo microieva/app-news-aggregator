@@ -4,10 +4,19 @@
   --np-foreground: #CAC8B9;
   --np-color-primary: #353535;
   --np-color-accent: #d83f08;
-  --np-body-background: #6D6C58;
+  --np-bg-background: #6D6C58;
+  --np-color-secondary: #4b5563;
+  --np-color-tertiary: #9ca3af;
 
-  --np-font-primary: 'Ibarra Real Nova', serif;
-  --np-font-secondary: 'Helvetica', sans-serif;
+  --np-font-primary: 'Ibarra Real Nova';
+  --np-font-secondary: 'Helvetica', 'Arial';
+
+  --np-text-sm: clamp(1rem, 1.8vw, 1.2rem);  
+  --np-text-md: clamp(1rem, 1.8vw, 2rem);  
+  --np-text-xm: clamp(1.2rem, 2.4vw, 2.2rem);
+  --np-text-lg: clamp(2.6rem, 3.6vw, 3.6rem); 
+  --np-text-xl: clamp(2rem,5vw,4.5rem);
+  --np-text-2xl: clamp(4rem, 10vw, 8rem);
 
   --tab-active-bg: var(--np-background);
   --tab-active-text: var(--np-color-primary);

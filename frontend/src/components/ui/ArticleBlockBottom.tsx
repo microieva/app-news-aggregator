@@ -8,14 +8,14 @@ export const ArticleBlockBottom = ({ article }: { article: Article }) => {
       {article && 
         <div 
           key={article.id }
-          className="relative rounded-tl-md shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 h-full bg-[var(--np-background)] p-4"
+          className="relative rounded-tl-md shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 h-full bg-background p-4"
         >
-          <div className="grid grid-cols-1 grid-rows-1 bg-[var(--np-background)] border-b border-[var(--np-color-primary)] pb-2 mb-4 text-2xl">
+          <div className="grid grid-cols-1 grid-rows-1 bg-background border-b border-[var(--np-color-primary)] pb-2 mb-4 text-md">
             <ArticleTitle article={article}/>
           </div>
           <div className="flex flex-row gap-8">
             {article.image_url && (
-              <div className="bg-[var(--np-background)] flex-1">
+              <div className="bg-background flex-1">
                 <img 
                   src={article.image_url} 
                   alt={article.title} 

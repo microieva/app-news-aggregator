@@ -4,9 +4,9 @@ export const LoadingPage = ({text}:{text?:string}) => {
   return (
     <AnimatedWrapper>
       <div className="wrapper content-center">
-        <div className="text-center text-[var(--np-foreground)]">
+        <div className="text-center text-foreground">
           <div className="loading loading-spinner"></div>
-          {text && <p>{text}</p>}
+          {text && <p className="text-sm font-bold">{text}</p>}
         </div>
       </div>
     </AnimatedWrapper>

@@ -11,7 +11,7 @@ interface RootLayoutProps {
 export default async function RootLayout({ children }: RootLayoutProps) {
 
    return (
-    <html lang="en" data-theme="light" className='bg-[var(--np-body-background)]'>
+    <html lang="en" data-theme="light" className='bg-bg'>
       <body>
         <Providers>
           <div className="app">

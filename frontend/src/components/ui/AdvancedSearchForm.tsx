@@ -23,6 +23,16 @@ export const AdvancedSearchForm = () => {
     sortBy: searchParams?.sortBy || 'relevance'
   });
 
+  const scrollToTop =()=> {
+    const mediaQuery = window.matchMedia('(max-width: 767px)');
+    
+    if (mediaQuery.matches && (loading || searchParams)) {
+      setTimeout(() => {
+        window.scrollTo({top:0, behavior:'smooth'});
+      }, 500); 
+    }
+  }
+
   const isFormEmpty = () => _.isEmpty(_.pickBy(formValues, value => 
     value !== '' && value !== 'relevance'
   ));
@@ -55,11 +65,12 @@ export const AdvancedSearchForm = () => {
     });
     clearSearch();
     setIsSearchOpen(true);
+    scrollToTop();
   };
 
   return (
     <form className="space-y-2" onSubmit={handleSubmit} >
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4 h-max">
         {/* Title Search */}
         <div className="form-control">
           <label className="label">
@@ -72,10 +83,10 @@ export const AdvancedSearchForm = () => {
             onChange={handleInputChange}
             placeholder="Enter keywords to search in article titles..."
             className={clsx(
-              "placeholder:text-[var(--np-foreground)] input input-sm input-bordered border-[var(--np-color-primary)] w-full focus:border-[var(--np-foreground)] rounded-md",
+              "placeholder:text-foreground input input-sm input-bordered border-[var(--np-color-primary)] w-full focus:border-foreground rounded-md",
               {
-                "bg-[var(--np-foreground)]": formValues.title !== '',
-                "bg-[var(--np-background)]": formValues.title === ''
+                "bg-foreground": formValues.title !== '',
+                "bg-background": formValues.title === ''
               }
             )}
           />
@@ -92,17 +103,17 @@ export const AdvancedSearchForm = () => {
             type="text"
             placeholder="Enter keywords to search in article content..."
             className={clsx(
-              "placeholder:text-[var(--np-foreground)] input input-sm input-bordered border-[var(--np-color-primary)] w-full focus:border-[var(--np-foreground)] rounded-md",
+              "placeholder:text-foreground input input-sm input-bordered border-[var(--np-color-primary)] w-full focus:border-foreground rounded-md",
               {
-                "bg-[var(--np-foreground)]": formValues.content !== '',
-                "bg-[var(--np-background)]": formValues.content === ''
+                "bg-foreground": formValues.content !== '',
+                "bg-background": formValues.content === ''
               }
             )}
           />
         </div>
       </div>
       {/* Date Range */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         <div className="form-control">
           <label className="label">
             <span className="label-text font-semibold">Published After</span>
@@ -113,10 +124,10 @@ export const AdvancedSearchForm = () => {
             onChange={handleInputChange}
             type="date"
             className={clsx(
-              "placeholder:text-[var(--np-foreground)] input input-sm input-bordered border-[var(--np-color-primary)] w-full focus:border-[var(--np-foreground)] rounded-md",
+              "placeholder:text-foreground input input-sm input-bordered border-[var(--np-color-primary)] w-full focus:border-foreground rounded-md",
               {
-                "bg-[var(--np-foreground)]": formValues.publishedAfter !== '',
-                "bg-[var(--np-background)]": formValues.publishedAfter === ''
+                "bg-foreground": formValues.publishedAfter !== '',
+                "bg-background": formValues.publishedAfter === ''
               }
             )}
           />
@@ -132,10 +143,10 @@ export const AdvancedSearchForm = () => {
             onChange={handleInputChange}
             type="date"
             className={clsx(
-              "placeholder:text-[var(--np-foreground)] input input-sm input-bordered border-[var(--np-color-primary)] w-full focus:border-[var(--np-foreground)] rounded-md",
+              "placeholder:text-foreground input input-sm input-bordered border-[var(--np-color-primary)] w-full focus:border-foreground rounded-md",
               {
-                "bg-[var(--np-foreground)]": formValues.publishedBefore !== '',
-                "bg-[var(--np-background)]": formValues.publishedBefore === ''
+                "bg-foreground": formValues.publishedBefore !== '',
+                "bg-background": formValues.publishedBefore === ''
               }
             )}
           />
@@ -143,7 +154,7 @@ export const AdvancedSearchForm = () => {
       </div>
 
       {/* Additional Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         <div className="form-control">
           <label className="label">
             <span className="label-text font-semibold">Source</span>
@@ -154,10 +165,10 @@ export const AdvancedSearchForm = () => {
             onChange={handleInputChange}
             disabled={Boolean(source)}
             className={clsx(
-              "placeholder:text-[var(--np-foreground)] select select-sm select-bordered border-[var(--np-color-primary)] w-full focus:border-[var(--np-foreground)] rounded-md disabled:bg-[var(--np-foreground)] disabled:border-gray-600",
+              "placeholder:text-foreground select select-sm select-bordered border-[var(--np-color-primary)] w-full focus:border-foreground rounded-md disabled:bg-foreground disabled:border-secondary",
               {
-                "bg-[var(--np-foreground)]": formValues.source !== '' || source,
-                "bg-[var(--np-background)]": formValues.source === ''
+                "bg-foreground": formValues.source !== '' || source,
+                "bg-background": formValues.source === ''
               }
             )}
           >
@@ -179,10 +190,10 @@ export const AdvancedSearchForm = () => {
             value={formValues.topic?.name || topic?.name || ''}
             onChange={handleInputChange}
             className={clsx(
-              "placeholder:text-[var(--np-foreground)] select select-sm select-bordered border-[var(--np-color-primary)] w-full focus:border-[var(--np-foreground)] rounded-md",
+              "placeholder:text-foreground select select-sm select-bordered border-[var(--np-color-primary)] w-full focus:border-foreground rounded-md",
               {
-                "bg-[var(--np-foreground)]": (formValues.topic as Topic)?.name || topic?.name,
-                "bg-[var(--np-background)]": !formValues.topic
+                "bg-foreground": (formValues.topic as Topic)?.name || topic?.name,
+                "bg-background": !formValues.topic
               }
             )}
           >
@@ -204,10 +215,10 @@ export const AdvancedSearchForm = () => {
           value={formValues.sortBy}
           onChange={handleInputChange}
           className={clsx(
-            "placeholder:text-[var(--np-foreground)] select select-sm select-bordered border-[var(--np-color-primary)] w-full focus:border-[var(--np-foreground)] rounded-md",
+            "placeholder:text-foreground select select-sm select-bordered border-[var(--np-color-primary)] w-full focus:border-foreground rounded-md",
             {
-              "bg-[var(--np-foreground)]": formValues.sortBy !== 'relevance',
-              "bg-[var(--np-background)]": formValues.sortBy === 'relevance'
+              "bg-foreground": formValues.sortBy !== 'relevance',
+              "bg-background": formValues.sortBy === 'relevance'
             }
           )}
         >
@@ -220,11 +231,11 @@ export const AdvancedSearchForm = () => {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row gap-3 pt-4">
+      <div className="flex flex-row gap-3 pt-4">
         <button
           disabled={isFormEmpty()}
           type="submit"
-          className="btn btn-sm bg-[var(--np-foreground)] flex-1 sm:flex-none border-none text-gray-600 hover:bg-inherit"
+          className="btn btn-sm bg-foreground flex-1 sm:flex-none border-none text-secondary hover:bg-inherit"
         >
           {loading ? 
           <>
@@ -248,9 +259,9 @@ export const AdvancedSearchForm = () => {
         </button>
         
         <button
-          onClick={()=>clearSearch()}
+          onClick={()=>{clearSearch(); scrollToTop()}}
           type="button"
-          className="btn bg-[var(--np-background)] border-transparent flex-1 sm:flex-none btn-sm hover:bg-[var(--np-foreground)] hover:text-gray-600"
+          className="btn bg-background border-transparent flex-1 sm:flex-none btn-sm hover:bg-foreground hover:text-secondary"
         >
           Close
         </button>

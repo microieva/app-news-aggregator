@@ -16,26 +16,60 @@ import { Article } from "@/types";
 
 const GridFrontPage = ({articles}: {articles:Article[]}) => {
   return (
+    <div className="overflow-hidden bg-primary">
+      <div className="grid-front-page">
+        <div className="grid-item-article-block-side">
+          <ArticleBlockSide article={articles[2]}/>
+        </div>
+        <div className="grid-item-article-list bg-article-list">
+          <div className="max-h-0">
+            <ArticleList title="Other Top Stories" /> 
+          </div>
+        </div>
+        <div className="grid-item-article-block-top">
+          <ArticleBlockTop article={articles.find(article => article.image_url !== article.url) || articles[0]}/>
+        </div>
+        <div className="grid-item-article-block-bottom">
+          <ArticleBlockBottom article={articles[3]}/>
+        </div>
+        <div className="grid-item-article-block row-start-2">
+          <ArticleBlockTop article={articles[1]}/>
+        </div>
+        <div className="grid-item-foreground-block">
+          <WeatherBlock/>
+        </div>
+      </div>
+      <div className="footer-front-page border-t-8">
+        <PageFooter/>
+      </div>
+    </div>
+  )
+}
+
+const GridFrontPageAlt = ({articles}: {articles:Article[]}) => {
+  return (
     <>
-      <div className="grid-item-article-block-side">
-        <ArticleBlockSide article={articles[2]}/>
+      <div className="grid-front-page">
+        <div className="col-span-10 md:col-span-6 row-span-1 col-start-1 row-start-1">
+          <ArticleBlockTop article={articles.find(article => article.image_url !== article.url) || articles[0]}/>
+        </div>
+        <div className="hidden md:block col-span-4 row-span-1 col-start-7 row-start-1 overflow-scroll rounded-tl-md max-h-[60vh] bg-article-list">
+          <ArticleList title="Other Top Stories" />
+        </div>
+        <div className="grid-item-article-block-side-alt">
+          <ArticleBlockSide article={articles[2]}/>
+        </div>
+        <div className="col-span-10 md:col-span-6 row-span-1 col-start-1 md:col-start-5 row-start-3 md:row-start-2 ">
+          <ArticleBlockTop article={articles[1]}/>
+        </div>
+        <div className="col-span-10 md:col-span-6 row-span-1 bg-foreground">
+          <WeatherBlock/>
+        </div>
+        <div className="col-span-10 md:col-span-4 row-span-1 col-start-1 md:col-start-7 row-start-4 md:row-start-3">
+          <ArticleBlockSide article={articles[3]}/>
+        </div>
       </div>
-      <div className="grid-item-article-list bg-article-list">
-        <ArticleList title="Other Top Stories" /> 
-      </div>
-      <div className="grid-item-article-block-top">
-        <ArticleBlockTop article={articles.find(article => article.image_url !== article.url) || articles[0]}/>
-      </div>
-      <div className="grid-item-article-block-bottom">
-        <ArticleBlockBottom article={articles[3]}/>
-      </div>
-      <div className="grid-item-article-block">
-        <ArticleBlockTop article={articles[1]}/>
-      </div>
-      <div className="grid-item-foreground-block row-start-9">
-        <WeatherBlock/>
-      </div>
-      <div className="footer footer-front-page row-start-11 border-t-8">
+      <div className="footer-front-page border-t-8">
         <PageFooter/>
       </div>
     </>
@@ -67,7 +101,6 @@ export default function FrontPage(){
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.4, ease: 'easeInOut' }}
-              //className="overflow-hidden"
             >
               <SearchComponent /> 
             </motion.div>
@@ -83,21 +116,21 @@ export default function FrontPage(){
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0 , height:0}}
               transition={{ duration: 0.4, ease: 'easeInOut' }}
-              //className="overflow-hidden"
+              className="overflow-hidden" 
             >
-              <div className="grid-search-view">
-                {!isSearchOpen && data &&
-                <>
-                  <div className="grid-item-article-list bg-article-list border-l">
-                    <ArticleList title={`Search results: ${data.articles.length}`} /> 
+              {!isSearchOpen && data &&
+                <div className="grid-search-view"> 
+                  <div className="grid-item-article-list bg-hoverborder-l">
+                    <div className="max-h-0">
+                      <ArticleList title={`Search results: ${data.articles.length}`} /> 
+                    </div>
                   </div>
-                  <div className="grid-item-foreground-block row-start-9">
+                  <div className="grid-item-foreground-block">
                     <WeatherBlock/>
                   </div>
-                </>}
-                <div className="footer footer-front-page row-start-11 border-t-8">
-                  <PageFooter/>
-                </div>
+                </div>}
+              <div className="footer-front-page border-t-8">
+                <PageFooter/>
               </div>
             </motion.div>
           ) : (
@@ -107,12 +140,17 @@ export default function FrontPage(){
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.4, ease: 'easeInOut' }}
-              //className="overflow-hidden"
             >
               {data && 
-                <div className="grid-front-page">
+              <>
+                <div className="hidden lg:block">
                   <GridFrontPage articles={data.articles}/>
-                </div>}
+                </div>
+                <div className="lg:hidden">
+                  <GridFrontPageAlt articles={data.articles}/>
+                </div>
+              </>
+              }
             </motion.div>
           )}
         </AnimatePresence>

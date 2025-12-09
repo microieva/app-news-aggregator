@@ -13,10 +13,10 @@ export const ArticleBlockTop = ({ article }: { article: Article }) => {
     <>
       {article && 
         <div 
-          className="relative rounded-tl-md shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 h-full bg-[var(--np-background)] p-4"
+          className="relative rounded-tl-md shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 h-full bg-background p-4"
         >
           <div className="grid grid-cols-1 grid-rows-1 bg-[var(--np-color-primary)]">
-            <div className="rounded-tr-xl bg-[var(--np-background)] border border-[var(--np-color-primary)] p-4 row-start-1 col-start-1 z-10 text-4xl">
+            <div className="rounded-tr-xl bg-background border border-[var(--np-color-primary)] p-4 row-start-1 col-start-1 z-10 text-xm">
               <ArticleTitle article={article}/>
             </div>
           </div>

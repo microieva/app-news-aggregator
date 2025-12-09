@@ -5,13 +5,13 @@ export const ArticleBlockSide = ({ article }: { article: Article }) => {
   
   return (
     <div 
-      className="relative rounded-tl-md rounded-bl-md shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 h-full bg-[var(--np-background)] p-4"
+      className="relative rounded-tl-md rounded-bl-md shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 h-full bg-background p-4"
     >
-      <div className="grid grid-cols-1 grid-rows-1 bg-[var(--np-background)] border-b border-[var(--np-color-primary)] pb-2 text-2xl">
+      <div className="grid grid-cols-1 grid-rows-1 bg-background border-b border-[var(--np-color-primary)] pb-2 text-md">
         <ArticleTitle article={article}/>
       </div>
       {article?.image_url && (
-        <div className="bg-[var(--np-background)]">
+        <div className="bg-background">
           <img 
             src={article.image_url} 
             alt={article.title} 

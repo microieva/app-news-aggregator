@@ -2,6 +2,7 @@ import { formatDate } from "@/utils/utils";
 import { Article } from "@/types/article";
 import { useHeadlines } from "@/contexts/HeadlinesContext";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 export const ArticleList = ({title, articles}: {title:string, articles?:Article[]}) => {
   const {data, loading, error} = useHeadlines();
@@ -19,19 +20,17 @@ export const ArticleList = ({title, articles}: {title:string, articles?:Article[
     const date = new Date(article.published_at!).toISOString();
 
     return (
-      <div className="grid grid-cols-[20%_80%] grid-rows-[auto_auto] gap-1">
-        <div className="text-5xl">
-          <h1 className="text-gray-600 italic font-secondary">{index<10 && '0'}{index}</h1>
-        </div>
-        <div className="pl-4 text-md">
-          <a href={`/articles/${article.id}`} className="font-semibold hover:underline">
+      <div className="grid grid-cols-[20%_80%] grid-rows-[auto_auto] gap-y-0">
+        <p style={{lineHeight:'initial'}} className="text-secondary italic font-secondary text-lg">{index<10 && '0'}{index}</p>
+        <div className="pl-4 text-sm" style={{lineHeight:'initial'}}>
+          <Link href={`/articles/${article.id}`} className="font-semibold hover:underline ">
             {article.title}
-          </a>
+          </Link>
         </div>
-        <div className=""><div className="divider w-full before:bg-gray-600 after:bg-gray-600"></div></div>
+        <div className="divider w-full before:bg-secondary after:bg-secondary h-0"></div>
         <div className="flex flex-row gap-2 ml-4">
-          <p className="content-center text-gray-600 text-xs">{formatDate(date, false)}</p>
-          <p className="content-center text-[var(--np-color-accent)] font-bold">|</p>
+          <p className="content-center text-secondary text-xs">{formatDate(date, false)}</p>
+          <p className="content-center text-accent font-bold">|</p>
           <p className="content-center text-gray-700 text-xs">{article.author}</p>
         </div>
       </div>
@@ -39,10 +38,10 @@ export const ArticleList = ({title, articles}: {title:string, articles?:Article[
   }
 
   return (
-    <div className="container flex flex-col gap-4 p-2 max-h-[40rem] min-h-[30rem]">
+    <div className="flex flex-col gap-4 p-2 bg-background">
       {headlines.length>0 ? 
       <>
-        <h1 className="border-b border-[var(--np-color-primary)] py-2 text-2xl font-bold mb-4">{title}</h1>
+        <p className="border-b border-primary py-2 font-bold text-md mb-4">{title}</p>
         {headlines.map((article: Partial<Article>, i:number) =>{ 
           return (
             <div key={i}>

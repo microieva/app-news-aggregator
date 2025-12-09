@@ -1,28 +1,20 @@
+import Link from "next/link"
+
 export const PageFooter = () => {
   return (
     <div className="border-t-[1px] border-[var(--np-color-primary)] w-full">
-          <div className="grid grid-cols-3 grid-rows-2 w-full px-4 gap-y-1 my-4 font-secondary">
-            <div className="text-gray-500 text-start text-xs">
-              <p>Developer</p>
-            </div>
-            <div className="text-gray-500 text-center text-xs">
-              <p>Layout Design By</p>
-            </div>
-            <div className="text-gray-500 text-end text-xs">
-              <p>Contact</p>
-            </div>
-            
-            <div className="text-start text-md">
-              <p>Ieva Vyliaudaite</p>
-            </div>
-            <div className="text-center text-md">
-              <p>Paperio, Dribble</p>
-            </div>
-            <div className="text-end text-md">
-              <p>ieva.vyliaudaite@me.com</p>
-            </div>
-          </div>
-          <h1 className="text-9xl mx-auto my-4 font-primary">News Paper</h1>
-        </div>
+      <div className="grid grid-cols-3 grid-rows-2 w-full px-1 md:px-4 gap-y-0 my-4 font-secondary min-h-max" >
+        <p className="text-gray-500 text-start text-xs">Developer</p>
+        <p className="text-gray-500 text-center text-xs">Layout Design</p>
+        <p className="text-gray-500 text-end text-xs">Contact</p>
+
+        <p className="text-start text-xs">Ieva Vyliaudaite</p>
+        <Link href="" target="_blank" className="text-center text-xs hover:font-bold hover:cursor-pointer duration-300">Paperio, David Satria</Link>
+        <p className="text-end text-xs">ieva.vyliaudaite@me.com</p>
+      </div>
+      <div className="text-center font-primary mx-auto font-bold">
+        <h1 className="text-2xl">News Paper</h1>
+      </div>
+    </div>
   )
 }

@@ -10,11 +10,11 @@ export const ErrorPage = ({error}: {error:ApiError}) => {
   return (
     <AnimatedWrapper>
       <div className="wrapper flex justify-center">
-        <div className="text-center content-center">
-          <p>{error.statusCode} - {error.message}</p>
-          <p><em>{error.detail}</em></p>
-          <div onClick={()=> router.refresh()} className="hover:opacity-70 mt-10 text-gray-400 hover:cursor-pointer">
-            <p>Try refreshing the page..</p>
+        <div className="text-center content-center font-foreground font-secondary">
+          <p className="text-sm font-bold">{error.statusCode} - {error.message}</p>
+          <p className="text-xs font-bold">{error.detail}</p>
+          <div onClick={()=> router.refresh()} className="hover:opacity-70 mt-10 text-tertiary hover:cursor-pointer">
+            <p className="xs">Try refreshing the page..</p>
             <img 
               src="/refresh.svg"
               alt="Refresh the page"

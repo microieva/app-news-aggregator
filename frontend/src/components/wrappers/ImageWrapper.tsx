@@ -1,6 +1,6 @@
 export const ImageWrapper = ({url, title, classNames}:{url:string, title:string, classNames:string[]}) => {
   return (
-     <div className={`bg-[var(--np-background)] aspect-[16/9] max-h-[50vh] overflow-hidden w-full ${classNames}`}>
+     <div className={`bg-background aspect-[16/9] max-h-[50vh] overflow-hidden w-full ${classNames}`}>
       <img 
         src={url} 
         alt={title} 
